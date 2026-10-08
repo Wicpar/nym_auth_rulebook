@@ -115,7 +115,7 @@ Each object inside the `req` array MUST contain:
 | Member | Type | Presence | Description |
 | :--- | :--- | :--- | :--- |
 | `id` | String | M | Function Type Identifier registered in Section 5 (e.g., `"pseudonym-v1-sha256"`, `"age_check"`). |
-| `return` | String | O | A presentation-unique output handle for mapping the result into `public_outputs.results`. |
+| `return` | String | O | An output handle unique within the Credential Query for mapping the result into `public_outputs.results`. |
 | `params` | Object | O | Key-value mapping of declared parameters for the specified function. Omission applies the function's defined defaults. | 
 
 ## Response procession and results mapping
@@ -179,6 +179,7 @@ In the returned `vp_token`, computed outputs MUST be placed in a top-level CBOR 
           },
           {
             "id": "age_check",
+            "return": "age-range-123"
             "params": {
               "gt": "2008-10-07",
               "le": "2013-10-07"
