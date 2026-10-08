@@ -228,7 +228,7 @@ The `known-offender-matching-ssc` configuration is defined in [ETSI SOURCE]() as
 
 1. `attribute_source` is the `ssc` (issuer known seed commitment) value from the `nym_auth` attestation.
 2. `prover_input` is null (32 zero bytes).
-3. `verifier_input` is set to the end relying party unique identifier (cf [Topic X](https://eudi.dev/latest/discussion-topics/x-relying-party-registration/#35-registration-certificate-for-intermediaries), which consists of the `x509_san_dns:` prefix followed by the fully qualified domain name of the verifier bound to its X.509 Access Certificate, e.g., `"x509_san_dns:rp.example.com"`. Thus `verifier_input = SHA256(x509_san_dns:rp.example.com)`
+3. `verifier_input` is set to the end relying party unique identifier (cf [Topic X](https://eudi.dev/latest/discussion-topics/x-relying-party-registration/#35-registration-certificate-for-intermediaries), which consists of the `x509_san_dns:` prefix followed by the fully qualified domain name of the verifier bound to its X.509 Access Certificate, e.g., `"x509_san_dns:rp.example.com"`. Thus `verifier_input` is the output of the SHA256 digest of the UTF-8 encoding of `"x509_san_dns:rp.example.com"`.
 
 The configuration properties are as follow:
 
@@ -242,7 +242,7 @@ The configuration properties are as follow:
 
 1. `attribute_source` is the `psc` (issuer unknown seed commitment) value from the `nym_auth` attestation.
 2. `prover_input` is null (32 zero bytes).
-3. `verifier_input` is set to the end relying party unique identifier (cf [Topic X](https://eudi.dev/latest/discussion-topics/x-relying-party-registration/#35-registration-certificate-for-intermediaries), which consists of the `x509_san_dns:` prefix followed by the fully qualified domain name of the verifier bound to its X.509 Access Certificate, e.g., `"x509_san_dns:rp.example.com"`. The resulting `verifier_input` is: `SHA256(x509_san_dns:rp.example.com)`
+3. `verifier_input` is set to the end relying party unique identifier (cf [Topic X](https://eudi.dev/latest/discussion-topics/x-relying-party-registration/#35-registration-certificate-for-intermediaries), which consists of the `x509_san_dns:` prefix followed by the fully qualified domain name of the verifier bound to its X.509 Access Certificate, e.g., `"x509_san_dns:rp.example.com"`. Thus `verifier_input` is the output of the SHA256 digest of the UTF-8 encoding of `"x509_san_dns:rp.example.com"`.
 
 The configuration properties are as follow:
 
@@ -256,7 +256,7 @@ The configuration properties are as follow:
 
 1. `attribute_source` is the `ssc` (issuer known seed commitment) value from the `nym_auth` attestation.
 2. `prover_input` is null (32 zero bytes).
-3. `verifier_input` takes both the end relying party unique identifier (cf [Topic X](https://eudi.dev/latest/discussion-topics/x-relying-party-registration/#35-registration-certificate-for-intermediaries), which consists of the `x509_san_dns:` prefix followed by the fully qualified domain name of the verifier bound to its X.509 Access Certificate, e.g., `"x509_san_dns:rp.example.com"`; and additional `verifier_context` as supplied by the verifier. The resulting `verifier_input` is: `SHA256(SHA256(x509_san_dns:rp.example.com) || verifier_context)`
+3. `verifier_input` takes both the end relying party unique identifier (cf [Topic X](https://eudi.dev/latest/discussion-topics/x-relying-party-registration/#35-registration-certificate-for-intermediaries), which consists of the `x509_san_dns:` prefix followed by the fully qualified domain name of the verifier bound to its X.509 Access Certificate, e.g., the UTF-8 encoding of `"x509_san_dns:rp.example.com"`; and additional UTF-8 encoded `verifier_context` as supplied by the verifier. The resulting `verifier_input` is the SHA256 digest of the two values concatenated.
 
 Properties:
 
