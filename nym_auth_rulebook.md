@@ -220,7 +220,7 @@ This specification version enables the following function parameters.
 
 ### Configurations
 
-All configurations generate the pseudonym as: `pseudonym = SHA256({secret, private}_seed || prover_input || verifier_input)`. The `attribute_source` determines which seed to use.
+All configurations generate the pseudonym as: `pseudonym = SHA256(DST || {secret, private}_seed || prover_input || verifier_input)`. The `attribute_source` determines which seed to use. The `DST` is set to `nym_auth/v1/<config>`.
 
 #### `known-offender-matching-ssc`
 
