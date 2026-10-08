@@ -293,10 +293,10 @@ Zero-knowledge comparison operators operating strictly over the `birth_date` att
 
 | Parameter | Type   | Presence | Description |
 |-----------|--------|----------|-------------|
-| `gt`      | String | OPTIONAL | Born strictly after date: $`\text{birth\_date} \gt \text{date}`$. |
-| `ge`      | String | OPTIONAL | Born on or after date: $`\text{birth\_date} \ge \text{date}`$. |
-| `lt`      | String | OPTIONAL | Born strictly before date: $`\text{birth\_date} \lt \text{date}`$. |
-| `le`      | String | OPTIONAL | Born on or before date: $`\text{birth\_date} \le \text{date}`$. |
+| `gt`      | String | O | Born strictly after date: $`\text{birth\_date} \gt \text{date}`$. |
+| `ge`      | String | O | Born on or after date: $`\text{birth\_date} \ge \text{date}`$. |
+| `lt`      | String | O | Born strictly before date: $`\text{birth\_date} \lt \text{date}`$. |
+| `le`      | String | O | Born on or before date: $`\text{birth\_date} \le \text{date}`$. |
 
 At least one parameter MUST be present. Multiple bounds can be combined in a single `age_check` call to prove an age range in one statement.
 
