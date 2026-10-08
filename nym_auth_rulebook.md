@@ -174,7 +174,7 @@ In the returned `vp_token`, computed outputs MUST be placed in a top-level CBOR 
             "id": "pseudonym-v1-sha256",
             "return": "nym-123",
             "params": {
-              "config": "known-offender-matching"
+              "config": "known-offender-matching-ssc"
             }
           },
           {
