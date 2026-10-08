@@ -300,7 +300,7 @@ Zero-knowledge comparison operators operating strictly over the `birth_date` att
 
 At least one parameter MUST be present. Multiple bounds can be combined in a single `age_check` call to prove an age range in one statement.
 
-A wallet unit MUST reject any request that specifies both a lower bound (`gt` or `ge`) and an upper bound (`lt` or `le`) when the interval between the specified dates is less than one calendar year.
+A wallet unit MUST reject any request that specifies both a lower bound (`gt` or `ge`) and an upper bound (`lt` or `le`) when the interval between the specified dates is less than one calendar year. This applies to the intersection of all date predicates in one `req`.
 
 # Presentation
 
