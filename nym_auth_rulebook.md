@@ -268,13 +268,13 @@ Properties:
 #### `user-managed-pseudonym-xsite-ssc`
 
 1. `attribute_source` is the `ssc` (issuer known seed commitment) value from the `nym_auth` attestation.
-2. `prover_input` is a user-supplied value shared across the sites the user wants to be linked across.
+2. `prover_input` is the SHA256 digest of a user-supplied value; shared across the sites the user wants to be linked across.
 3. `verifier_input` is null (32 zero bytes).
 
 Properties:
 
 * The same pseudonym value can be presented to different verifiers.
-* Remapping the pseudonym to an identity is as hard as brute forcing the `prover_input`.
+* Remapping the pseudonym to an identity is as hard as brute forcing the `prover_input`. Wallet Units MUST ensure at least 128 bits of entropy.
 
 ## Date predicate function (`age_check`)
 
