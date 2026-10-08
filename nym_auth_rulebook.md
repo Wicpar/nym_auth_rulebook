@@ -275,6 +275,8 @@ Properties:
 
 * The same pseudonym value can be presented to different verifiers.
 * Remapping the pseudonym to an identity is as hard as brute forcing the `prover_input`. Wallet Units MUST ensure at least 128 bits of entropy.
+* Does not offer sybil resistance.
+* Does not support known offender matching.
 
 ## Date predicate function (`age_check`)
 
