@@ -248,7 +248,9 @@ The configuration properties are as follow:
 
 * The pseudonym value is distinct per `client_id`.
 * Remapping the pseudonym to an identity is as hard as brute forcing the `private_seed`, which is intractable.
-* It supports known offender matching.
+* It supports known offender matching, provided that the issuer allows one `pcs` per identity subject.
+
+> **NOTE**: If the issuer changes, it may allow a new `pcs`.
 
 #### `account-recovery-ssc`
 
