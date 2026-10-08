@@ -181,7 +181,7 @@ In the returned `vp_token`, computed outputs MUST be placed in a top-level CBOR 
             "id": "age_check",
             "params": {
               "gt": "2008-10-07",
-              "lte": "2013-10-07"
+              "le": "2013-10-07"
             }
           }
         ]
