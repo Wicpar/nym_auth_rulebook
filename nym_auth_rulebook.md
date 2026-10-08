@@ -206,7 +206,7 @@ If a Wallet Unit receives a request for a function `id` not defined below or not
 Derives a deterministic pseudonym using the SHA-256 instantiation defined in [ETSI SOURCE]().
 
 * Function identifier (`id`): `"pseudonym-v1-sha256"`.
-* Source attribute: `ssc` (or `psc` when configured).
+* Source attribute: `ssc` (or `psc` when configured). Note that the generation does not use `ssc` or `psc` directly, but their openings (`secret_seed` and `private_seed`).
 * Output: A 32-byte base64url-encoded string placed in `results[<handle>]`.
 
 ### Parameters
@@ -220,7 +220,7 @@ This specification version enables the following function parameters.
 
 ### Configurations
 
-All configurations generate the pseudonym as: `pseudonym = SHA256(attribute_source || prover_input || verifier_input)`.
+All configurations generate the pseudonym as: `pseudonym = SHA256({secret, private}_seed || prover_input || verifier_input)`. The `attribute_source` determines which seed to use.
 
 #### `known-offender-matching-ssc`
 
@@ -230,15 +230,13 @@ The `known-offender-matching-ssc` configuration is defined in [ETSI SOURCE]() as
 2. `prover_input` is null (32 zero bytes).
 3. `verifier_input` is set to the end relying party unique identifier (cf [Topic X](https://eudi.dev/latest/discussion-topics/x-relying-party-registration/#35-registration-certificate-for-intermediaries), which consists of the `x509_san_dns:` prefix followed by the fully qualified domain name of the verifier bound to its X.509 Access Certificate, e.g., `"x509_san_dns:rp.example.com"`. Thus `verifier_input = SHA256(x509_san_dns:rp.example.com)`
 
-Pseudonym is generated as: `SHA256(ssc || <32 zero bytes> || SHA256(x509_san_dns:rp.example.com))`
-
 The configuration properties are as follow:
 
 * The pseudonym value is distinct per `client_id`.
-* The pseudonym can be remapped to an identity by the issuer, who knows the `ssc` value.
+* The pseudonym can be remapped to an identity by the issuer, who knows the `secret_seed` value.
 * It supports known offender matching.
 
-> **NOTE**: If the issuer known seed commitment changes, so does the pseudonym generated. A ban can be evaded by changing the issuer to one using a different issuer known seed.
+> **NOTE**: If the issuer known seed changes, so does the pseudonym generated. A ban can be evaded by changing the issuer to one using a different issuer known seed.
 
 #### `known-offender-matching-psc`
 
@@ -249,7 +247,7 @@ The configuration properties are as follow:
 The configuration properties are as follow:
 
 * The pseudonym value is distinct per `client_id`.
-* Remapping the pseudonym to an identity is as hard as brute forcing the `psc`, which is intractable.
+* Remapping the pseudonym to an identity is as hard as brute forcing the `private_seed`, which is intractable.
 * It supports known offender matching.
 
 #### `account-recovery-ssc`
@@ -261,7 +259,7 @@ The configuration properties are as follow:
 Properties:
 
 * The pseudonym value is distinct per `client_id + verifier_context`.
-* The pseudonym can be remapped to an identity by the issuer, who knows the `ssc` value.
+* The pseudonym can be remapped to an identity by the issuer, who knows the `secret_seed` value.
 * Supports account recovery for a given account as identified by the `verifier_context`.
 * Supports known offender matching per supplied `verifier_context`.
 
