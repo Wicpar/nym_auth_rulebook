@@ -136,7 +136,7 @@ Each object inside the `req` array MUST contain:
 
 ## Response processing and results mapping
 
-The Wallet Unit generates a single proof, using one approved circuit, that covers all requested statements in `req` and is bound to the presentation session as defined in the Binding section.
+The Wallet Unit generates a proof, using one approved circuit, that covers all requested statements in `req` and is bound to the presentation session as defined in the Binding section.
 
 > **NOTE:** It is possible to use two distinct attestations, one for age and one for pseudonym, but if both require 2FA the user experience is degraded. In this version, both age verification and pseudonym is satisfied using a single attestation `nym_auth`.
 
