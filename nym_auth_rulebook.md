@@ -199,7 +199,8 @@ Illustrative only. The example below will be updated to align with the OpenID dr
             "id": "pseudonym-v1-sha256",
             "return": "nym-123",
             "params": {
-              "config": "known-offender-matching-ssc"
+              "config": "known-offender-matching-ssc",
+              "verifier_id_type": "x509_san_dns"
             }
           },
           {
@@ -234,10 +235,23 @@ Derives a deterministic pseudonym using the SHA-256 instantiation.
 * Function identifier (`id`): `"pseudonym-v1-sha256"`.
 * Source attribute: `ssc` (or `psc` when configured). Note that the generation does not use `ssc` or `psc` directly, but their openings (`secret_seed` and `private_seed`).
 * Output: A 32-byte base64url-encoded string placed in `results[<handle>]`.
-* When a configuration requires a verifier identity, the Wallet Unit MUST check whether an intermediary is used. When an intermediary acts as the Relying Party, the Wallet Unit MUST NOT use an intermediary `client_id` and MUST use the end Relying Party identifier. If the end Relying Party identifier cannot be ascertained, the Wallet Unit MUST NOT present a pseudonym.
-* Wallet Units MUST NOT use the `x509_hash` as a source for the end Relying Party identity.
 
-> **NOTE:** Section 5.1.3. in ETSI TS 119 475 defines a globally unique end RP identifier.
+### Verifier identity
+
+Configurations that use `verifier_input` derive it from `verifier_id`, a UTF-8 string whose form is selected by the Verifier with `verifier_id_type`:
+
+* `semantic`: `"semantic_id:"` followed by the end Relying Party's semantic identifier as defined in ETSI TS 119 475, Section 5.1.3 (legal persons) or Section 5.1.5 (natural persons). The Wallet Unit MUST take it from the registration certificate when one is present, and otherwise from the access certificate.
+* `x509_san_dns`: the Client Identifier, i.e. `"x509_san_dns:"` followed by the DNS name bound to the access certificate used to sign the request.
+
+The Wallet Unit MUST treat the request as unsatisfiable if:
+
+* the identifier of the requested type cannot be obtained from authenticated sources;
+* `verifier_id_type` is `x509_san_dns` and the Client Identifier uses any other prefix (including `x509_hash`);
+* `verifier_id_type` is `x509_san_dns` and the registration certificate identifies an intermediary.
+
+> **NOTE 1:** The two identifier types yield unrelated pseudonyms for the same Relying Party. A Verifier that changes `verifier_id_type` or its identifier loses continuity with existing pseudonyms.
+> **NOTE 2:** Outside the EUDIW ecosystem intermediaries cannot be detected; with `x509_san_dns` the pseudonym is then distinct per access-certificate holder, not per end Relying Party.
+> **NOTE 3:** Within the EUDIW, an intermediary acting without a registration certificate presents its own semantic identifier, so end Relying Parties behind it share a pseudonym space.
 
 ### Parameters
 
@@ -247,10 +261,11 @@ This specification version enables the following function parameters.
 | :-- | :-- | :-- | :-- | :-- |
 | `config` | string | REQ | Identifier for standard configurations. | Allowed values are specified in the configurations below. |
 | `verifier_context` | string | CON | Additional context supplied by the verifier. | Required for account recovery. MUST NOT be present elsewhere. UTF-8, 1–64 bytes. |
+| `verifier_id_type` | string | CON | Type of verifier identity used in `verifier_input`. | `semantic` or `x509_san_dns`. Required for configurations that use `verifier_input`; MUST NOT be present otherwise. |
 
 A Wallet Unit MUST treat the request as unsatisfiable if `verifier_context` is absent for a configuration that requires it, present for a configuration that does not allow it, or longer than 64 bytes.
 
-If the predicate does not hold for the attestation's `birth_date`, the request is unsatisfiable and the Wallet Unit MUST NOT produce a presentation.
+A Wallet Unit MUST treat the request as unsatisfiable if `verifier_id_type` is absent for a configuration that uses `verifier_input`, present for a configuration that does not, or has a value other than `semantic` or `x509_san_dns`.
 
 ### Configurations
 
@@ -262,11 +277,11 @@ The `known-offender-matching-ssc` configuration is defined as follows:
 
 1. `attribute_source` is the `ssc` (issuer known seed commitment) value from the `nym_auth` attestation. Used to assert `SHA256(secret_seed) == ssc`; generation uses `secret_seed`.
 2. `prover_input` is null (32 zero bytes).
-3. `verifier_input` is set to the end relying party unique identifier (cf [Topic X](https://eudi.dev/latest/discussion-topics/x-relying-party-registration/#35-registration-certificate-for-intermediaries)), which consists of the `x509_san_dns:` prefix followed by the fully qualified domain name of the verifier bound to its X.509 Access Certificate, e.g., `"x509_san_dns:rp.example.com"`. Thus `verifier_input` is the output of the SHA256 digest of the UTF-8 encoding of `"x509_san_dns:rp.example.com"`.
+3. `verifier_input` is `SHA256(verifier_id)`, with `verifier_id` as defined in the Verifier identity subsection.
 
 The configuration properties are as follows:
 
-* The pseudonym value is distinct per `client_id`.
+* The pseudonym value is distinct per `verifier_id`.
 * The pseudonym can be remapped to an identity by the issuer, who knows the `secret_seed` value.
 * It supports known offender matching.
 
@@ -277,11 +292,11 @@ The configuration properties are as follows:
 
 1. `attribute_source` is the `psc` (issuer unknown seed commitment) value from the `nym_auth` attestation. Used to assert `SHA256(private_seed) == psc`; generation uses `private_seed`.
 2. `prover_input` is null (32 zero bytes).
-3. `verifier_input` is set to the end relying party unique identifier (cf [Topic X](https://eudi.dev/latest/discussion-topics/x-relying-party-registration/#35-registration-certificate-for-intermediaries)), which consists of the `x509_san_dns:` prefix followed by the fully qualified domain name of the verifier bound to its X.509 Access Certificate, e.g., `"x509_san_dns:rp.example.com"`. Thus `verifier_input` is the output of the SHA256 digest of the UTF-8 encoding of `"x509_san_dns:rp.example.com"`.
+3. `verifier_input` is `SHA256(verifier_id)`, with `verifier_id` as defined in the Verifier identity subsection.
 
 The configuration properties are as follows:
 
-* The pseudonym value is distinct per `client_id`.
+* The pseudonym value is distinct per `verifier_id`.
 * Remapping the pseudonym to an identity is as hard as brute forcing the `private_seed`, which is intractable.
 * To support known offender matching, the issuer MUST only allow one `psc` per identity subject.
 
@@ -292,11 +307,11 @@ The configuration properties are as follows:
 
 1. `attribute_source` is the `ssc` (issuer known seed commitment) value from the `nym_auth` attestation. Used to assert `SHA256(secret_seed) == ssc`; generation uses `secret_seed`.
 2. `prover_input` is null (32 zero bytes).
-3. `verifier_input` takes both the end relying party unique identifier (cf [Topic X](https://eudi.dev/latest/discussion-topics/x-relying-party-registration/#35-registration-certificate-for-intermediaries)), which consists of the `x509_san_dns:` prefix followed by the fully qualified domain name of the verifier bound to its X.509 Access Certificate, e.g., the UTF-8 encoding of `"x509_san_dns:rp.example.com"`; and additional UTF-8 encoded `verifier_context` as supplied by the verifier. The resulting `verifier_input` is the SHA256 digest of the two values' respective SHA256 digests concatenated: `SHA256(SHA256(<end Relying Party id>) || SHA256(verifier_context))`.
+3. `verifier_input` is `SHA256(SHA256(verifier_id) || SHA256(verifier_context))`, with `verifier_id` as defined in the Verifier identity subsection and `verifier_context` UTF-8 encoded as supplied by the Verifier.
 
 The configuration properties are as follows:
 
-* The pseudonym value is distinct per `client_id + verifier_context`.
+* The pseudonym value is distinct per `verifier_id` and `verifier_context`.
 * The pseudonym can be remapped to an identity by the issuer, who knows the `secret_seed` value.
 * Supports account recovery for a given account as identified by the `verifier_context`.
 * Supports known offender matching per supplied `verifier_context`.
