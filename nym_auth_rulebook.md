@@ -97,6 +97,21 @@ psc_type = bstr .size 32
 
 The map and all contained data items MUST be encoded according to RFC 8949, Section 4.2.1 (Core Deterministic Encoding Requirements). The `birth_date` value MUST be a CBOR tag 1004 text string conforming to RFC 8943, containing a valid RFC 3339 `full-date`.
 
+## Compact profile
+
+An attestation conforms to the compact profile if, in addition to ISO/IEC 18013-5:
+
+* it contains only the data elements defined in this document;
+* each `random` value is 16 bytes;
+* `digestID` values are assigned sequentially from 0;
+* the MSO contains no optional members;
+* `validityInfo` values have the form `YYYY-MM-DDTHH:MM:SSZ`;
+* the device key and the Document Signer key are P-256 keys.
+
+Issuers SHOULD issue attestations conforming to the compact profile.
+
+A registry entry MAY target the compact profile. For every supported combination of functions, the registry MUST contain at least one approved circuit that accepts any ISO/IEC 18013-5 conformant encoding. A Wallet Unit SHOULD use a compact-profile circuit when its attestation conforms and the Verifier accepts one.
+
 # DCQL Profile and Presentation Syntax (`circuit_zk`)
 
 ## Overview and fail-closed design
@@ -288,6 +303,8 @@ Derives a deterministic pseudonym using the SHA-256 instantiation.
 * Function identifier (`id`): `"pseudonym-v1-sha256"`.
 * Source attribute: `ssc` (or `psc` when configured). Note that the generation does not use `ssc` or `psc` directly, but their openings (`secret_seed` and `private_seed`).
 * Output: a 32-byte value (`PseudonymValue`) placed in `results[<handle>]`.
+
+A `req` MUST NOT contain more than one `pseudonym-v1-sha256` item. A Wallet Unit MUST treat a request containing more than one as unsatisfiable.
 
 ### Verifier identity
 
