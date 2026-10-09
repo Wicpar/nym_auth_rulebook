@@ -58,14 +58,25 @@ In tables, REQ is short for REQUIRED, OPT is short for OPTIONAL, CON is short fo
 | **secret_seed_commitment** | `ssc` | `bstr` (32 bytes) | REQ | **Issuer Known Seed Commitment**: $`C = \text{SHA-256}(\text{secret\_seed})`$ where $`\text{secret\_seed}`$ is a 16-byte random shared secret between the issuer and prover. |
 | **private_seed_commitment** | `psc` | `bstr` (32 bytes) | OPT | **Issuer Unknown Seed Commitment**: $`C = \text{SHA-256}(\text{private\_seed})`$ where $`\text{private\_seed}`$ is a 16-byte random value known only to the prover. |
 
-> **NOTE**: Issuer identity and attestation authenticity are established exclusively through the Mobile Security Object (MSO) signature and its associated X.509 certificate chain.
+## Mobile Security Object requirements
 
-Furthermore:
+For ISO/IEC 18013-5 encoded attestations:
 
-* Validity information with `validityInfo` MUST be `signed` and include `"validFrom"` and `"validUntil"`.
-* The attestation MUST be cryptographically bound to a hardware protected signing key detailed in `"deviceKeyInfo.deviceKey"`.
-* The digests MUST be generated using `"digestAlgorithm": "SHA-256"`.
-* The issuer signing key MUST exist in a certificate in an `x5chain` of `issuerAuth`.
+* The MSO `validityInfo` MUST contain `signed`, `validFrom` and `validUntil`
+  as defined in ISO/IEC 18013-5.
+* The MSO `digestAlgorithm` MUST be `"SHA-256"`.
+* `deviceKeyInfo.deviceKey` MUST contain the public key of a device key pair
+  whose private key is protected by [hardware / WSCD reference].
+* `issuerAuth` MUST carry the `x5chain` header parameter (label 33) in its
+  unprotected header, containing the Document Signer certificate. The
+  `issuerAuth` signature MUST verify under the public key in that certificate.
+
+> **NOTE:** Attestation authenticity is established by the `issuerAuth`
+> signature and its certificate chain. In a `circuit_zk` presentation the
+> signature is verified inside the circuit against the issuer public key set;
+> neither the MSO nor the certificate is disclosed. Certificate chain
+> validation therefore happens when the issuer public key set is built, not
+> inside the circuit.
 
 ---
 
@@ -195,7 +206,7 @@ Illustrative only. The example below will be updated to align with the OpenID dr
             "id": "age_check",
             "return": "age-range-123",
             "params": {
-              "gt": "2008-10-09",
+              "ge": "2008-10-10",
               "le": "2013-10-09"
             }
           }
@@ -226,8 +237,7 @@ Derives a deterministic pseudonym using the SHA-256 instantiation.
 * When a configuration requires a verifier identity, the Wallet Unit MUST check whether an intermediary is used. When an intermediary acts as the Relying Party, the Wallet Unit MUST NOT use an intermediary `client_id` and MUST use the end Relying Party identifier. If the end Relying Party identifier cannot be ascertained, the Wallet Unit MUST NOT present a pseudonym.
 * Wallet Units MUST NOT use the `x509_hash` as a source for the end Relying Party identity.
 
-> **NOTE 1:** It is unclear how the Wallet Unit can determine that it is interacting with an intermediary without doing a lookup against a still undefined association list.
-> **NOTE 2:** It is unclear what the end Relying Party identifier is when an intermediary is used and when no end RPRC is available.
+> **NOTE:** Section 5.1.3. in ETSI TS 119 475 defines a globally unique end RP identifier.
 
 ### Parameters
 
@@ -239,6 +249,8 @@ This specification version enables the following function parameters.
 | `verifier_context` | string | CON | Additional context supplied by the verifier. | Required for account recovery. MUST NOT be present elsewhere. UTF-8, 1–64 bytes. |
 
 A Wallet Unit MUST treat the request as unsatisfiable if `verifier_context` is absent for a configuration that requires it, present for a configuration that does not allow it, or longer than 64 bytes.
+
+If the predicate does not hold for the attestation's `birth_date`, the request is unsatisfiable and the Wallet Unit MUST NOT produce a presentation.
 
 ### Configurations
 
@@ -308,7 +320,7 @@ Properties:
 
 Zero-knowledge comparison operators operating strictly over the `birth_date` attribute (`#6.1004(tstr)`). Used to prove age thresholds, or ranges.
 
-> **NOTE:** Date predicates in this version does not support exact date matches. Because a range can be used to get exact date match restrictions on the interval between the lower and upper bound are needed. The restrictions herein are not generally applicable to other date ranges.
+> **NOTE:** Date predicates in this version do not support exact date matches. Because a sufficiently narrow range is equivalent to an exact match, the interval between lower and upper bounds is restricted below. This restriction is specific to this attestation and is not a general rule for other date ranges.
 
 * Function identifier (`id`): `"age_check"`.
 * Source attribute: `birth_date`.
@@ -318,14 +330,14 @@ Zero-knowledge comparison operators operating strictly over the `birth_date` att
 
 | Parameter | Type   | Presence | Description |
 |-----------|--------|----------|-------------|
-| `gt`      | String | OPT | Born strictly after date: $`\text{birth\_date} \gt \text{date}`$. |
 | `ge`      | String | OPT | Born on or after date: $`\text{birth\_date} \ge \text{date}`$. |
-| `lt`      | String | OPT | Born strictly before date: $`\text{birth\_date} \lt \text{date}`$. |
 | `le`      | String | OPT | Born on or before date: $`\text{birth\_date} \le \text{date}`$. |
 
-At least one parameter MUST be present. Multiple bounds can be combined in a single `age_check` call to prove an age range in one statement.
+At least one parameter MUST be present. Dates are RFC 3339 `full-date` strings. Strict bounds are expressed by shifting the date by one day.
 
-A wallet unit MUST reject any request that specifies both a lower bound (`gt` or `ge`) and an upper bound (`lt` or `le`) when the interval between the specified dates is less than 365 days. This applies to the intersection of all date predicates in one `req`.
+A `req` MUST NOT contain more than one `age_check` item. A Wallet Unit MUST treat a request containing more than one `age_check` item as unsatisfiable.
+
+If both `ge` and `le` are present, the Wallet Unit MUST treat the request as unsatisfiable when `le < ge` or when `le − ge + 1` (counted in days) is less than 365.
 
 # Presentation
 
@@ -349,34 +361,35 @@ The following MUST be public inputs: `verifier_input`, the session binding value
 
 The pseudonym and predicate results are public outputs.
 
-### Capability negotiation
-
-The Verifier signals the proof systems and circuits it accepts in `client_metadata.vp_formats_supported.circuit_zk`, using the parameters defined above.
-
-When the Authorization Request uses `request_uri_method=post`, the Wallet Unit MAY send the same parameters in `wallet_metadata.vp_formats_supported.circuit_zk`, and the Verifier SHOULD tailor the Request Object to them.
-
-Over DCAPI, the Wallet Unit cannot send `wallet_metadata`. The Verifier SHOULD therefore list every proof system and circuit identifier it accepts, and the Wallet Unit selects among them.
-
 ## The `circuit_zk` format
 
-The following parameters MAY be used in the `circuit_zk` object of `vp_formats_supported`, in Verifier metadata (`client_metadata`) and in Wallet
-metadata (`wallet_metadata`):
+### Credential Query
+
+For `circuit_zk`, the `meta` object MUST contain exactly one of:
+
+* `doctype_value` (string): the ISO/IEC 18013-5 `docType` of the underlying ISO/IEC 18013-5 attestation.
+* `vct_values` (array of strings): reserved for a future SD-JWT VC binding (not defined in this version).
+
+The `circuit_zk` format does not use `claims`. All requests MUST be present in `req`. This version does not define `req_sets` (corresponding to `claim_sets`).
+
+`require_cryptographic_holder_binding` MUST be absent or `true`. A Wallet Unit MUST treat a Credential Query with `require_cryptographic_holder_binding: false` as unsatisfiable.
+
+### Metadata parameters
+
+The following parameters MAY be used in the `circuit_zk` object of `vp_formats_supported`, in Verifier metadata (`client_metadata`) and in Wallet metadata (`wallet_metadata`):
 
 * `circuit_proof_system_values`: OPTIONAL. Non-empty array of proof system identifiers from the approved circuit registry.
 * `circuit_id_values`: OPTIONAL. Non-empty array of unique circuit identifiers from the approved circuit registry.
 
 When the Verifier provides these parameters, the Wallet Unit MUST select an approved circuit whose proof system and identifier are both listed and which supports every item in `req`; if none exists, the request is unsatisfiable. The presentation response MUST identify the circuit identifier used.
 
-The `circuit_zk` format does not use `claims`. All requests MUST be present in `req`. This version does not define a `req_sets` (corresponding to `claim_sets`).
+### Capability negotiation
 
-For `circuit_zk`, the `meta` object MUST contain exactly one of:
+The Verifier signals the proof systems and circuits it accepts in `client_metadata.vp_formats_supported.circuit_zk`, using the parameters defined above.
 
-* `doctype_value` (string): the ISO/IEC 18013-5 `docType` of the underlying ISO/IEC 18013-5 attestation.
-* `vct_values` (array of strings): reserved for a future SD-JWT VC binding (not defined in this version). 
+When the Authorization Request uses `request_uri_method=post`, the Wallet Unit MAY send the same parameters in `wallet_metadata.vp_formats_supported.circuit_zk`, and the Verifier SHOULD tailor the Request Object to them.
 
-### Holder binding
-
-`require_cryptographic_holder_binding` MUST be absent or `true`. A Wallet Unit MUST treat a Credential Query with `require_cryptographic_holder_binding: false` as unsatisfiable.
+Over the Digital Credentials API, the Wallet Unit cannot send `wallet_metadata`. The Verifier SHOULD therefore list every proof system and circuit identifier it accepts, and the Wallet Unit selects among them.
 
 ## Binding
 
