@@ -348,7 +348,10 @@ When the Verifier provides these parameters, the Wallet Unit MUST select an appr
 
 ## Binding
 
-A `circuit_zk` presentation MUST be bound to the presentation session. The circuit MUST verify, as a private computation, the device signature over the ISO/IEC 18013-5 `DeviceAuthentication` structure, which contains the `SessionTranscript`.
+A `circuit_zk` presentation MUST be bound to the presentation session. The circuit MUST verify, as a private computation, the device signature over the ISO/IEC 18013-5 `DeviceAuthentication` structure, which contains the `SessionTranscript`. 
+
+> **NOTE 1:** The issuer signing key is public input. The digests remain private. Validity dates remain private.
+> **NOTE 2:** The validity date is also a range check, but may employ a different mechanism. As it is a required check, it is not something the verifier includes in `req`.
 
 The `SessionTranscript` is `[null, null, Handover]`, with `Handover` constructed as defined in OpenID4VP 1.0 Appendix B.2.6.
 
