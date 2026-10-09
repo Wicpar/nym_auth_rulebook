@@ -219,6 +219,10 @@ Derives a deterministic pseudonym using the SHA-256 instantiation defined in [ET
 * Function identifier (`id`): `"pseudonym-v1-sha256"`.
 * Source attribute: `ssc` (or `psc` when configured). Note that the generation does not use `ssc` or `psc` directly, but their openings (`secret_seed` and `private_seed`).
 * Output: A 32-byte base64url-encoded string placed in `results[<handle>]`.
+* When a configuration requires a verifier identity, the Wallet Unit must check whether an intermediary is used. When an intermediary acts as the Relying Party, the Wallet Unit MUST NOT use an intermediary `client_id` and MUST use the end Relying Party identifier. If the end Relying Party identifier cannot be ascertained, the Wallet Unit MUST not present a pseudonym.
+
+> **NOTE 1:** It is unclear how the Wallet Unit can determine that it is interacting with an intermediary without doing a lookup against a still undefined association list.
+> **NOTE 2:** It is unclear what the end Relying Party identifier is when an intermediary is used and when no end RPRC is available.
 
 ### Parameters
 
@@ -243,10 +247,6 @@ The `known-offender-matching-ssc` configuration is defined in [ETSI SOURCE]() as
 2. `prover_input` is null (32 zero bytes).
 3. `verifier_input` is set to the end relying party unique identifier (cf [Topic X](https://eudi.dev/latest/discussion-topics/x-relying-party-registration/#35-registration-certificate-for-intermediaries)), which consists of the `x509_san_dns:` prefix followed by the fully qualified domain name of the verifier bound to its X.509 Access Certificate, e.g., `"x509_san_dns:rp.example.com"`. Thus `verifier_input` is the output of the SHA256 digest of the UTF-8 encoding of `"x509_san_dns:rp.example.com"`.
 
-When the Verifier is an intermediary, the Wallet Unit MUST NOT use the intermediary `client_id` and MUST use the end Relying Party identifier. If the end Relying Party identifier cannot be ascertained, the Wallet Unit MUST not present a pseudonym.
-
-> **NOTE:** It is not clear how the Wallet Unit can determine that it is interacting with an intermediary without doing a lookup against a still undefined association list.
-
 The configuration properties are as follows:
 
 * The pseudonym value is distinct per `client_id`.
@@ -262,9 +262,7 @@ The configuration properties are as follows:
 2. `prover_input` is null (32 zero bytes).
 3. `verifier_input` is set to the end relying party unique identifier (cf [Topic X](https://eudi.dev/latest/discussion-topics/x-relying-party-registration/#35-registration-certificate-for-intermediaries)), which consists of the `x509_san_dns:` prefix followed by the fully qualified domain name of the verifier bound to its X.509 Access Certificate, e.g., `"x509_san_dns:rp.example.com"`. Thus `verifier_input` is the output of the SHA256 digest of the UTF-8 encoding of `"x509_san_dns:rp.example.com"`.
 
-When the Verifier is an intermediary, the Wallet Unit MUST NOT use the intermediary `client_id` and MUST use the end Relying Party identifier. If the end Relying Party identifier cannot be ascertained, the Wallet Unit MUST not present a pseudonym.
-
-The configuration properties are as follow:
+The configuration properties are as follows:
 
 * The pseudonym value is distinct per `client_id`.
 * Remapping the pseudonym to an identity is as hard as brute forcing the `private_seed`, which is intractable.
@@ -279,7 +277,7 @@ The configuration properties are as follow:
 2. `prover_input` is null (32 zero bytes).
 3. `verifier_input` takes both the end relying party unique identifier (cf [Topic X](https://eudi.dev/latest/discussion-topics/x-relying-party-registration/#35-registration-certificate-for-intermediaries)), which consists of the `x509_san_dns:` prefix followed by the fully qualified domain name of the verifier bound to its X.509 Access Certificate, e.g., the UTF-8 encoding of `"x509_san_dns:rp.example.com"`; and additional UTF-8 encoded `verifier_context` as supplied by the verifier. The resulting `verifier_input` is the SHA256 digest of the two values' respective SHA256 digests concatenated: `SHA256(SHA256(verifier_id) || SHA256(verifier_context))`.
 
-Properties:
+The configuration properties are as follows:
 
 * The pseudonym value is distinct per `client_id + verifier_context`.
 * The pseudonym can be remapped to an identity by the issuer, who knows the `secret_seed` value.
