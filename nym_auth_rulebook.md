@@ -169,35 +169,35 @@ Illustrative only. The example below will be updated to align with the OpenID dr
           "urn:circuits:longfellow:nym_auth:v1"
         ]
       }
-    },
-    "dcql_query": {
-      "credentials": [
-        {
-          "id": "nym_attestation",
-          "format": "circuit_zk",
-          "meta": {
-            "doctype_value": "eu.europa.ec.eudi.nym_auth.1"
-          },
-          "req": [
-            {
-              "id": "pseudonym-v1-sha256",
-              "return": "nym-123",
-              "params": {
-                "config": "known-offender-matching-ssc"
-              }
-            },
-            {
-              "id": "age_check",
-              "return": "age-range-123",
-              "params": {
-                "gt": "2008-10-09",
-                "le": "2013-10-09"
-              }
-            }
-          ]
-        }
-      ]
     }
+  },
+  "dcql_query": {
+    "credentials": [
+      {
+        "id": "nym_attestation",
+        "format": "circuit_zk",
+        "meta": {
+          "doctype_value": "eu.europa.ec.eudi.nym_auth.1"
+        },
+        "req": [
+          {
+            "id": "pseudonym-v1-sha256",
+            "return": "nym-123",
+            "params": {
+              "config": "known-offender-matching-ssc"
+            }
+          },
+          {
+            "id": "age_check",
+            "return": "age-range-123",
+            "params": {
+              "gt": "2008-10-09",
+              "le": "2013-10-09"
+            }
+          }
+        ]
+      }
+    ]
   }
 }
 ```
