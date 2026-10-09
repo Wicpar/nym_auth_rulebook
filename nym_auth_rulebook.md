@@ -6,13 +6,13 @@ status: "public draft"
 date: "2026-10-09"
 ---
 
-# Introduction and Scope
+# Introduction and scope
 
 ## Scope
 
-This document specifies the natural-person anonymous/pseudonymous authentication attestation** (`eu.europa.ec.eudi.nym_auth.1`). This attestation enables a Holder to:
+This document specifies the natural-person anonymous/pseudonymous authentication attestation (`eu.europa.ec.eudi.nym_auth.1`). This attestation enables a Holder to:
 
-1. Generate a pseudonyms with various properties for authentication, account binding, and known-offender matching.
+1. Generate a pseudonym with various properties for authentication, account binding, and known-offender matching.
 2. Generate a zero-knowledge proof of correct pseudonym generation.
 3. Prove zero-knowledge date-based predicates (e.g., age checks).
 
@@ -22,6 +22,7 @@ This version 0.1 targets circuit-based Zero-Knowledge Proof (ZKP) presentations 
 * Non-ZKP fallbacks.
 * SD-JWT VC encodings.
 * Details on revocation and validity checks. The circuit checks these using a yet to be mandated mechanism.
+* The relationship between the circuit provider and the circuit registry.
 
 Pseudonyms, ZKP proof systems referenced herein, and circuit definitions are defined externally in:
 
@@ -222,6 +223,7 @@ Derives a deterministic pseudonym using the SHA-256 instantiation.
 * Source attribute: `ssc` (or `psc` when configured). Note that the generation does not use `ssc` or `psc` directly, but their openings (`secret_seed` and `private_seed`).
 * Output: A 32-byte base64url-encoded string placed in `results[<handle>]`.
 * When a configuration requires a verifier identity, the Wallet Unit must check whether an intermediary is used. When an intermediary acts as the Relying Party, the Wallet Unit MUST NOT use an intermediary `client_id` and MUST use the end Relying Party identifier. If the end Relying Party identifier cannot be ascertained, the Wallet Unit MUST NOT present a pseudonym.
+* Wallet Units MUST NOT use the `x509_hash` as a source for the end Relying Party identity.
 
 > **NOTE 1:** It is unclear how the Wallet Unit can determine that it is interacting with an intermediary without doing a lookup against a still undefined association list.
 > **NOTE 2:** It is unclear what the end Relying Party identifier is when an intermediary is used and when no end RPRC is available.
@@ -239,7 +241,7 @@ A Wallet Unit MUST treat the request as unsatisfiable if `verifier_context` is a
 
 ### Configurations
 
-All configurations generate the pseudonym as: `pseudonym = SHA256(DST || {secret, private}_seed || prover_input || verifier_input)`. The `attribute_source` determines which seed to use. The `DST` is set to `nym_auth/v1/<config>`. The verifier MUST recompute and supply its own public inputs to the circuit proof verification.
+All configurations generate the pseudonym as: `pseudonym = SHA256(DST || {secret, private}_seed || prover_input || verifier_input)`. The `attribute_source` determines which seed to use. The `DST` is set to `nym_auth/v1/<config>` (UTF-8 encoded). The verifier MUST recompute and supply its own public inputs to the circuit proof verification.
 
 #### `known-offender-matching-ssc`
 
@@ -268,7 +270,7 @@ The configuration properties are as follows:
 
 * The pseudonym value is distinct per `client_id`.
 * Remapping the pseudonym to an identity is as hard as brute forcing the `private_seed`, which is intractable.
-* To supports known offender matching, the issuer MUST only allow one `psc` per identity subject.
+* To support known offender matching, the issuer MUST only allow one `psc` per identity subject.
 
 > **NOTE 1**: If the issuer changes, it may allow a new `psc`, which changes the pseudonym generated.
 > **NOTE 2**: If the `verifier_input` changes, so does the pseudonym generated. Known offender matching is not possible if the Verifier identity changes.
@@ -334,7 +336,7 @@ The ecosystem maintains a registry of approved circuits. Given the attestation t
 
 When the Authorization Request uses `request_uri_method=post`, the Wallet Unit MAY send capability information in `wallet_metadata`, and the Verifier SHOULD tailor the Request Object to them.
 
-Correspondingly, for a verifier-initiated flow, the verifier can announce its capabilities inside `client_metadata.vp_formats_supported` and list supported proof systems (e.g., `circuit_proof_system_values: ["longfellow-libzk-v1", "vega-v2", ...]`), and circuit identifiers (e.g., `circuit_id_values: ["urn:circuits:longfellow:nym_auth:v1", "urn:circuits:vega:nym_auth:v5"]]`).
+Correspondingly, for a verifier-initiated flow, the verifier can announce its capabilities inside `client_metadata.vp_formats_supported` and list supported proof systems (e.g., `circuit_proof_system_values: ["longfellow-libzk-v1", "vega-v2", ...]`), and circuit identifiers (e.g., `circuit_id_values: ["urn:circuits:longfellow:nym_auth:v1", "urn:circuits:vega:nym_auth:v5"]`).
 
 ## The `circuit_zk` format
 
@@ -345,6 +347,8 @@ metadata (`wallet_metadata`):
 * `circuit_id_values`: OPTIONAL. Non-empty array of unique circuit identifiers from the approved circuit registry.
 
 When the Verifier provides these parameters, the Wallet Unit MUST select an approved circuit whose proof system and identifier are both listed and which supports every item in `req`; if none exists, the request is unsatisfiable. The presentation response MUST identify the circuit identifier used.
+
+The `circuit_zk` format does not use `claims`. All requests must be present in `req`. This version does not define a `req_sets` (corresponding to `claim_sets`).
 
 ## Binding
 
