@@ -309,7 +309,7 @@ Zero-knowledge comparison operators operating strictly over the `birth_date` att
 
 * Function identifier (`id`): `"age_check"`.
 * Source attribute: `birth_date`.
-* Output: The assertion result placed in `results[<handle>]`.
+* Output: The assertion result `true` placed in `results[<handle>]`.
 
 ### Parameters
 
