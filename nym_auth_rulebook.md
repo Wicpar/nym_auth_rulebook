@@ -131,7 +131,7 @@ Each object inside the `req` array MUST contain:
 
 The Wallet Unit generates a proof, using one approved circuit, that covers all requested statements in `req` and is bound to the presentation session as defined in the Binding section.
 
-> **NOTE:** It is possible to use two distinct attestations, one for age and one for pseudonym, but if both require 2FA the user experience is degraded. In this version, both age verification and pseudonym is satisfied using a single attestation `nym_auth`.
+> **NOTE:** It is possible to use two distinct attestations, one for age and one for pseudonym, but if both require 2FA the user experience is degraded. In this version, both age verification and pseudonym are satisfied using a single attestation `nym_auth`.
 
 In the returned `vp_token`, computed outputs MUST be placed in a top-level CBOR map named `results` inside `public_outputs`. The `results` map keys MUST match the corresponding `return` handle of each item in `req`.
 
@@ -272,7 +272,7 @@ The `known-offender-matching-ssc` configuration is defined as follows:
 2. `prover_input` is null (32 zero bytes).
 3. `verifier_input` is `SHA256(verifier_id)`, with `verifier_id` as defined in the Verifier identity subsection.
 
-The configuration properties are as follows:
+The configuration's properties are as follows:
 
 * The pseudonym value is distinct per `verifier_id`.
 * The pseudonym can be remapped to an identity by the issuer, who knows the `secret_seed` value.
@@ -287,7 +287,7 @@ The configuration properties are as follows:
 2. `prover_input` is null (32 zero bytes).
 3. `verifier_input` is `SHA256(verifier_id)`, with `verifier_id` as defined in the Verifier identity subsection.
 
-The configuration properties are as follows:
+The configuration's properties are as follows:
 
 * The pseudonym value is distinct per `verifier_id`.
 * Remapping the pseudonym to an identity is as hard as brute forcing the `private_seed`, which is intractable.
@@ -302,7 +302,7 @@ The configuration properties are as follows:
 2. `prover_input` is null (32 zero bytes).
 3. `verifier_input` is `SHA256(SHA256(verifier_id) || SHA256(verifier_context))`, with `verifier_id` as defined in the Verifier identity subsection and `verifier_context` UTF-8 encoded as supplied by the Verifier.
 
-The configuration properties are as follows:
+The configuration's properties are as follows:
 
 * The pseudonym value is distinct per `verifier_id` and `verifier_context`.
 * The pseudonym can be remapped to an identity by the issuer, who knows the `secret_seed` value.
@@ -317,7 +317,7 @@ The configuration properties are as follows:
 
 Wallet Units MAY add additional entropy to the user-supplied value.
 
-Properties:
+The configuration's properties are as follows:
 
 * The same pseudonym value can be presented to different verifiers.
 * Remapping the pseudonym to an identity is as hard as brute forcing the `prover_input`, which is only intractable if that value has
