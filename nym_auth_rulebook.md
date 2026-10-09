@@ -34,14 +34,14 @@ Pseudonym derivation is normatively defined in this document.
 
 Approved circuit verification hashes and parameter mappings are maintained in a registry of approved circuits.
 
-## System Roles
+## System roles
 
 * **Issuer:** Issues a signed attestation with attributes and statements about an identity subject.
 * **Circuit provider:** Issues a signed circuit suitable for a specified presentation request.
 * **Prover (Holder, Wallet Unit):** Stores the issuer-signed attestation, generates pseudonyms, and produces ZKP.
 * **Verifier (Relying Party):** Requests at least one function execution and/or a claim via DCQL and validates the ZKP.
 
-## Key Words
+## Key words
 
 The key words **MUST**, **MUST NOT**, **REQUIRED**, **SHALL**, **SHALL NOT**, **SHOULD**, **SHOULD NOT**, **RECOMMENDED**, **MAY**, and **OPTIONAL** in this document are to be interpreted as described in RFC 2119.
 
@@ -49,9 +49,9 @@ In tables, REQ is short for REQUIRED, OPT is short for OPTIONAL, CON is short fo
 
 ---
 
-# Attestation Data Model and Attributes
+# Attestation data model and attributes
 
-## Attribute Overview
+## Attribute overview
 
 | Data Identifier | Attribute Identifier | CBOR / CDDL Representation | Presence | Description |
 | :--- | :--- | :--- | :--- | :--- |
@@ -59,7 +59,7 @@ In tables, REQ is short for REQUIRED, OPT is short for OPTIONAL, CON is short fo
 | **secret_seed_commitment** | `ssc` | `bstr` (32 bytes) | REQ | **Issuer Known Seed Commitment**: $`C = \text{SHA-256}(\text{secret\_seed})`$ where $`\text{secret\_seed}`$ is a 16-byte random shared secret between the issuer and prover. |
 | **private_seed_commitment** | `psc` | `bstr` (32 bytes) | OPT | **Issuer Unknown Seed Commitment**: $`C = \text{SHA-256}(\text{private\_seed})`$ where $`\text{private\_seed}`$ is a 16-byte random value known only to the prover. |
 
-## Mobile Security Object requirements
+## Mobile security object requirements
 
 For ISO/IEC 18013-5 encoded attestations:
 
@@ -73,7 +73,7 @@ For ISO/IEC 18013-5 encoded attestations:
 
 ---
 
-# ISO/IEC 18013-5 Compliant Encoding
+# ISO/IEC 18013-5 compliant encoding
 
 ## Document type and Namespace
 
@@ -124,7 +124,7 @@ Each object inside the `req` array MUST contain:
 | Member | Type | Presence | Description |
 | :--- | :--- | :--- | :--- |
 | `id` | String | REQ | Function Type Identifier registered in Section 5 (e.g., `"pseudonym-v1-sha256"`, `"age_check"`). |
-| `return` | String | REQ | An output handle unique within the Credential Query for mapping the result into `public_outputs.results`. |
+| `return` | String | REQ | An output handle unique within the Credential Query for mapping the result into `results`. |
 | `params` | Object | OPT | Key-value mapping of declared parameters for the specified function. Omission applies the function's defined defaults. | 
 
 ## Response processing and results mapping
@@ -133,12 +133,65 @@ The Wallet Unit generates a proof, using one approved circuit, that covers all r
 
 > **NOTE:** It is possible to use two distinct attestations, one for age and one for pseudonym, but if both require 2FA the user experience is degraded. In this version, both age verification and pseudonym are satisfied using a single attestation `nym_auth`.
 
-In the returned `vp_token`, computed outputs MUST be placed in a top-level CBOR map named `results` inside `public_outputs`. The `results` map keys MUST match the corresponding `return` handle of each item in `req`.
+### Presentation encoding
+
+In the `vp_token`, the value for each `circuit_zk` Credential Query `id` is an array of presentations as defined in OpenID4VP 1.0. Each presentation is the base64url-encoded (without padding) CBOR encoding of a `CircuitZkPresentation`:
+
+```cddl
+CircuitZkPresentation = {
+  "circuit_id"     => tstr,            ; approved circuit used
+  "proof"          => bstr,            ; proof as defined by the proof system
+  "issuer_key_set" => IssuerKeySet,
+  ? "proof_time"   => tdate,           ; present when the circuit checks validity
+  "results"        => Results
+}
+
+IssuerKeySet = [+ bstr]                ; DER-encoded Document Signer certificates
+
+Results = { + tstr => ResultValue }    ; keys are the `return` handles in `req`
+ResultValue = PseudonymValue / PredicateValue
+PseudonymValue = bstr .size 32
+PredicateValue = true
+```
+
+The keys of `results` MUST be exactly the `return` handles of the items in `req`. The Verifier MUST reject a presentation with missing or additional keys.
+
+`issuer_key_set` is given in the representation defined by the registry entry of `circuit_id`. For an explicit list, each element is a DER-encoded Document Signer certificate, and the Verifier MUST validate each certificate against its trust anchors.
+
+`proof_time` is the time used by the circuit for validity checks. The Verifier MUST reject the presentation if `proof_time` deviates from its own clock by more than its tolerance.
+
+### Verification
+
+To verify a presentation, the Verifier:
+
+1. looks up `circuit_id` in the approved circuit registry and confirms it is
+   one it accepts;
+2. validates `issuer_key_set`;
+3. assembles the public inputs in the order defined by the registry entry,
+   taking `issuer_key_set`, `proof_time` and the values in `results` from the
+   presentation, and recomputing all other public inputs itself (session
+   binding values, `verifier_input`, and the `req` parameters it sent);
+4. verifies `proof` against the circuit and the assembled public inputs.
+
+The Verifier MUST NOT take any public input other than `issuer_key_set`,
+`proof_time` and `results` from the presentation.
+
+Example `vp_token` (presentation shown in CBOR diagnostic notation before
+encoding):
 
 ```json
-"public_outputs": {
+{
+  "nym_attestation": ["<base64url(CBOR(CircuitZkPresentation))>"]
+}
+```
+
+```cbor-diag
+{
+  "circuit_id": "urn:circuits:longfellow:nym_auth:v1",
+  "proof": h'...',
+  "issuer_key_set": [h'3082...'],
   "results": {
-    "nym-123": "<32-byte base64url string>",
+    "nym-123": h'5f2a...e1',
     "age-range-123": true
   }
 }
