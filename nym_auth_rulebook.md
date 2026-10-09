@@ -245,6 +245,8 @@ The `known-offender-matching-ssc` configuration is defined in [ETSI SOURCE]() as
 
 When the Verifier is an intermediary, the Wallet Unit MUST NOT use the intermediary `client_id` and MUST use the end Relying Party identifier. If the end Relying Party identifier cannot be ascertained, the Wallet Unit MUST not present a pseudonym.
 
+> **NOTE:** It is not clear how the Wallet Unit can determine that it is interacting with an intermediary without doing a lookup against a still undefined association list.
+
 The configuration properties are as follows:
 
 * The pseudonym value is distinct per `client_id`.
