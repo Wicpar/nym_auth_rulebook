@@ -122,7 +122,7 @@ A Credential Query targeting `"eu.europa.ec.eudi.nym_auth.1"` MUST observe the f
 * `meta` (REQUIRED): MUST contain doctype_value set to `"eu.europa.ec.eudi.nym_auth.1"`.
 * `req` (REQUIRED): A non-empty array of objects specifying proven zero-knowledge calculations and predicates.
 
-> **NOTE**: Proof system capability negotiation (e.g., supported ZK proof systems) occurs at the protocol level as defined in Sections 10-11 in OID4VP 1.0.
+> **NOTE**: Proof system capability negotiation (e.g., supported ZK proof systems) occurs at the protocol level as defined in the capability negotiations subsection.
 
 ### `req` item member specification
 
@@ -136,7 +136,7 @@ Each object inside the `req` array MUST contain:
 
 ## Response processing and results mapping
 
-The Wallet Unit generates a proof using a circuit covering all requested statements in `req` in a single proof bound to the presentation `SessionTranscript`.
+The Wallet Unit generates a single proof, using one approved circuit, that covers all requested statements in `req` and is bound to the presentation session as defined in the Binding section.
 
 > **NOTE:** It is possible to use two distinct attestations, one for age and one for pseudonym, but if both require 2FA the user experience is degraded. In this version, both age verification and pseudonym is satisfied using a single attestation `nym_auth`.
 
@@ -393,11 +393,11 @@ Over the Digital Credentials API, the Wallet Unit cannot send `wallet_metadata`.
 
 ## Binding
 
-A `circuit_zk` presentation MUST be bound to the presentation session. The circuit MUST verify the device signature over the ISO/IEC 18013-5 `DeviceAuthentication` structure, which contains the `SessionTranscript`. 
+A `circuit_zk` presentation MUST be bound to the presentation session. The circuit MUST verify holder binding over the session binding values defined by the registry entry of the selected circuit.
+
+For attestations identified by `doctype_value` (ISO/IEC 18013-5), the circuit MUST verify the device signature over the `DeviceAuthentication` structure, which contains the `SessionTranscript`. The `SessionTranscript` is `[null, null, Handover]`, with `Handover` constructed as defined in OpenID4VP 1.0 Appendix B.2.6.
 
 > **NOTE:** The validity date is also a range check, but may employ a different mechanism. As it is a required check, it is not something the verifier includes in `req`.
-
-The `SessionTranscript` is `[null, null, Handover]`, with `Handover` constructed as defined in OpenID4VP 1.0 Appendix B.2.6.
 
 Over DC API the following applies to bind the pseudonym to the Verifier:
 
