@@ -131,7 +131,7 @@ In the returned `vp_token`, computed outputs MUST be placed in a top-level CBOR 
 "public_outputs": {
   "results": {
     "nym-123": "<32-byte base64url string>",
-    "age-range-123": True
+    "age-range-123": true
   }
 }
 ```
