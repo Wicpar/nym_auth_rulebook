@@ -290,6 +290,8 @@ The configuration properties are as follows:
 2. `prover_input` is the SHA256 digest of a user-supplied value; shared across the sites the user wants to be linked across.
 3. `verifier_input` is null (32 zero bytes).
 
+Wallet Units MAY add additional entropy to the user-supplied value to make remapping harder.
+
 Properties:
 
 * The same pseudonym value can be presented to different verifiers.
