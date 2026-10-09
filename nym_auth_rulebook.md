@@ -130,12 +130,14 @@ In the returned `vp_token`, computed outputs MUST be placed in a top-level CBOR 
 "public_outputs": {
   "results": {
     "nym-123": "<32-byte base64url string>",
-    "age_check": true
+    "age-range-123": True
   }
 }
 ```
 
 ## Example DCQL request
+
+Illustrative only. The example below will be updated to align with the OpenID drafts.
 
 ```json
 {
@@ -179,7 +181,7 @@ In the returned `vp_token`, computed outputs MUST be placed in a top-level CBOR 
           },
           {
             "id": "age_check",
-            "return": "age-range-123"
+            "return": "age-range-123",
             "params": {
               "gt": "2008-10-07",
               "le": "2013-10-07"
@@ -227,7 +229,7 @@ All configurations generate the pseudonym as: `pseudonym = SHA256(DST || {secret
 
 The `known-offender-matching-ssc` configuration is defined in [ETSI SOURCE]() as follows:
 
-1. `attribute_source` is the `ssc` (issuer known seed commitment) value from the `nym_auth` attestation.
+1. `attribute_source` is the `ssc` (issuer known seed commitment) value from the `nym_auth` attestation. Used to assert `SHA256(secret_seed) == ssc`; generation uses `secret_seed`.
 2. `prover_input` is null (32 zero bytes).
 3. `verifier_input` is set to the end relying party unique identifier (cf [Topic X](https://eudi.dev/latest/discussion-topics/x-relying-party-registration/#35-registration-certificate-for-intermediaries), which consists of the `x509_san_dns:` prefix followed by the fully qualified domain name of the verifier bound to its X.509 Access Certificate, e.g., `"x509_san_dns:rp.example.com"`. Thus `verifier_input` is the output of the SHA256 digest of the UTF-8 encoding of `"x509_san_dns:rp.example.com"`.
 
@@ -241,7 +243,7 @@ The configuration properties are as follow:
 
 #### `known-offender-matching-psc`
 
-1. `attribute_source` is the `psc` (issuer unknown seed commitment) value from the `nym_auth` attestation.
+1. `attribute_source` is the `psc` (issuer unknown seed commitment) value from the `nym_auth` attestation. Used to assert `SHA256(private_seed) == psc`; generation uses `private_seed`.
 2. `prover_input` is null (32 zero bytes).
 3. `verifier_input` is set to the end relying party unique identifier (cf [Topic X](https://eudi.dev/latest/discussion-topics/x-relying-party-registration/#35-registration-certificate-for-intermediaries), which consists of the `x509_san_dns:` prefix followed by the fully qualified domain name of the verifier bound to its X.509 Access Certificate, e.g., `"x509_san_dns:rp.example.com"`. Thus `verifier_input` is the output of the SHA256 digest of the UTF-8 encoding of `"x509_san_dns:rp.example.com"`.
 
@@ -249,15 +251,15 @@ The configuration properties are as follow:
 
 * The pseudonym value is distinct per `client_id`.
 * Remapping the pseudonym to an identity is as hard as brute forcing the `private_seed`, which is intractable.
-* It supports known offender matching, provided that the issuer allows one `pcs` per identity subject.
+* It supports known offender matching, provided that the issuer allows one `psc` per identity subject.
 
-> **NOTE**: If the issuer changes, it may allow a new `pcs`.
+> **NOTE**: If the issuer changes, it may allow a new `psc`.
 
 #### `account-recovery-ssc`
 
-1. `attribute_source` is the `ssc` (issuer known seed commitment) value from the `nym_auth` attestation.
+1. `attribute_source` is the `ssc` (issuer known seed commitment) value from the `nym_auth` attestation. Used to assert `SHA256(secret_seed) == ssc`; generation uses `secret_seed`.
 2. `prover_input` is null (32 zero bytes).
-3. `verifier_input` takes both the end relying party unique identifier (cf [Topic X](https://eudi.dev/latest/discussion-topics/x-relying-party-registration/#35-registration-certificate-for-intermediaries), which consists of the `x509_san_dns:` prefix followed by the fully qualified domain name of the verifier bound to its X.509 Access Certificate, e.g., the UTF-8 encoding of `"x509_san_dns:rp.example.com"`; and additional UTF-8 encoded `verifier_context` as supplied by the verifier. The resulting `verifier_input` is the SHA256 digest of the two values concatenated.
+3. `verifier_input` takes both the end relying party unique identifier (cf [Topic X](https://eudi.dev/latest/discussion-topics/x-relying-party-registration/#35-registration-certificate-for-intermediaries), which consists of the `x509_san_dns:` prefix followed by the fully qualified domain name of the verifier bound to its X.509 Access Certificate, e.g., the UTF-8 encoding of `"x509_san_dns:rp.example.com"`; and additional UTF-8 encoded `verifier_context` as supplied by the verifier. The resulting `verifier_input` is the SHA256 digest of the two values' respective SHA256 digests concatenated: `SHA256(SHA256(verifier_id) || SHA256(verifier_context))`.
 
 Properties:
 
@@ -268,14 +270,14 @@ Properties:
 
 #### `user-managed-pseudonym-xsite-ssc`
 
-1. `attribute_source` is the `ssc` (issuer known seed commitment) value from the `nym_auth` attestation.
+1. `attribute_source` is the `ssc` (issuer known seed commitment) value from the `nym_auth` attestation. Used to assert `SHA256(secret_seed) == ssc`; generation uses `secret_seed`.
 2. `prover_input` is the SHA256 digest of a user-supplied value; shared across the sites the user wants to be linked across.
 3. `verifier_input` is null (32 zero bytes).
 
 Properties:
 
 * The same pseudonym value can be presented to different verifiers.
-* Remapping the pseudonym to an identity is as hard as brute forcing the `prover_input`. Wallet Units MUST ensure at least 128 bits of entropy.
+* Remapping the pseudonym to an identity is as hard as brute forcing the `prover_input`.
 * Does not offer sybil resistance.
 * Does not support known offender matching.
 
