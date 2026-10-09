@@ -42,6 +42,8 @@ Approved circuit verification hashes and parameter mappings are maintained in a 
 
 The key words **MUST**, **MUST NOT**, **REQUIRED**, **SHALL**, **SHALL NOT**, **SHOULD**, **SHOULD NOT**, **RECOMMENDED**, **MAY**, and **OPTIONAL** in this document are to be interpreted as described in RFC 2119.
 
+In tables, REQ is short for REQUIRED, OPT is short for OPTIONAL, CON is short for CONDITIONAL.
+
 ---
 
 # Attestation Data Model and Attributes
@@ -231,7 +233,7 @@ This specification version enables the following function parameters.
 | Parameter | Type | Presence | Description | Parameter restrictions | 
 | :-- | :-- | :-- | :-- | :-- |
 | `config` | string | REQ | Identifier for standard configurations. | Allowed values are specified in the configurations below. |
-| `verifier_context` | string | CON | Additional context supplied by the verifier. | Presence as required by the selected configuration. UTF-8, 1–64 bytes. |
+| `verifier_context` | string | CON | Additional context supplied by the verifier. | Required for account recovery. MUST NOT be present elsewhere. UTF-8, 1–64 bytes. |
 
 A Wallet Unit MUST treat the request as unsatisfiable if `verifier_context` is absent for a configuration that requires it, present for a configuration that does not allow it, or longer than 64 bytes.
 
