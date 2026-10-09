@@ -219,7 +219,7 @@ Derives a deterministic pseudonym using the SHA-256 instantiation defined in [ET
 * Function identifier (`id`): `"pseudonym-v1-sha256"`.
 * Source attribute: `ssc` (or `psc` when configured). Note that the generation does not use `ssc` or `psc` directly, but their openings (`secret_seed` and `private_seed`).
 * Output: A 32-byte base64url-encoded string placed in `results[<handle>]`.
-* When a configuration requires a verifier identity, the Wallet Unit must check whether an intermediary is used. When an intermediary acts as the Relying Party, the Wallet Unit MUST NOT use an intermediary `client_id` and MUST use the end Relying Party identifier. If the end Relying Party identifier cannot be ascertained, the Wallet Unit MUST not present a pseudonym.
+* When a configuration requires a verifier identity, the Wallet Unit must check whether an intermediary is used. When an intermediary acts as the Relying Party, the Wallet Unit MUST NOT use an intermediary `client_id` and MUST use the end Relying Party identifier. If the end Relying Party identifier cannot be ascertained, the Wallet Unit MUST NOT present a pseudonym.
 
 > **NOTE 1:** It is unclear how the Wallet Unit can determine that it is interacting with an intermediary without doing a lookup against a still undefined association list.
 > **NOTE 2:** It is unclear what the end Relying Party identifier is when an intermediary is used and when no end RPRC is available.
