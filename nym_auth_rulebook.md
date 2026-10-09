@@ -324,13 +324,29 @@ Zero-knowledge comparison operators operating strictly over the `birth_date` att
 
 At least one parameter MUST be present. Multiple bounds can be combined in a single `age_check` call to prove an age range in one statement.
 
-A wallet unit MUST reject any request that specifies both a lower bound (`gt` or `ge`) and an upper bound (`lt` or `le`) when the interval between the specified dates is less than one calendar year. This applies to the intersection of all date predicates in one `req`.
+A wallet unit MUST reject any request that specifies both a lower bound (`gt` or `ge`) and an upper bound (`lt` or `le`) when the interval between the specified dates is less than 365 days. This applies to the intersection of all date predicates in one `req`.
 
 # Presentation
 
-## Approved circuits
+## Approved circuits registry entries
 
 The ecosystem maintains a registry of approved circuits. Given the attestation type (`eu.europa.ec.eudi.nym_auth.1`), presentation format (`circuit_zk`), and the requested functions in `req`, the Wallet Unit and Verifier look up an approved circuit from the registry. Each circuit MUST have a unique identifier.
+
+Each registry entry MUST specify: 
+
+* the circuit identifier,
+* the proof system,
+* the underlying credential format and doctype/vct,
+* the supported functions, and parameters, and
+* the ordered list of public inputs with how the Verifier derives each one.
+
+## Input and output classification
+
+The following MUST be private inputs: `secret_seed`, `private_seed`, `prover_input`, `birth_date`, all issuer-signed data and digests, the issuer signature, the device public key and device signature.
+
+The following MUST be public inputs: `verifier_input`, the session binding values defined by the registry entry, all function parameters values in `req`, the current time when validity is checked, and the issuer public key set.
+
+The pseudonym and predicate results are public outputs.
 
 ## Presentation flow initiation
 
@@ -350,12 +366,16 @@ When the Verifier provides these parameters, the Wallet Unit MUST select an appr
 
 The `circuit_zk` format does not use `claims`. All requests must be present in `req`. This version does not define a `req_sets` (corresponding to `claim_sets`).
 
+For `circuit_zk`, the `meta` object MUST contain exactly one of:
+
+* `doctype_value` (string): the ISO/IEC 18013-5 `docType` of the underlying ISO/IEC 18013-5 attestation.
+* `vct_values` (array of strings): reserved for a future SD-JWT VC binding (not defined in this version). 
+
 ## Binding
 
-A `circuit_zk` presentation MUST be bound to the presentation session. The circuit MUST verify, as a private computation, the device signature over the ISO/IEC 18013-5 `DeviceAuthentication` structure, which contains the `SessionTranscript`. 
+A `circuit_zk` presentation MUST be bound to the presentation session. The circuit MUST verify the device signature over the ISO/IEC 18013-5 `DeviceAuthentication` structure, which contains the `SessionTranscript`. 
 
-> **NOTE 1:** The issuer signing key is public input. The digests remain private. Validity dates remain private.
-> **NOTE 2:** The validity date is also a range check, but may employ a different mechanism. As it is a required check, it is not something the verifier includes in `req`.
+> **NOTE:** The validity date is also a range check, but may employ a different mechanism. As it is a required check, it is not something the verifier includes in `req`.
 
 The `SessionTranscript` is `[null, null, Handover]`, with `Handover` constructed as defined in OpenID4VP 1.0 Appendix B.2.6.
 
