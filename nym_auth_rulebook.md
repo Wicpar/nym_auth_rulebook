@@ -25,11 +25,12 @@ This version 0.1 targets circuit-based Zero-Knowledge Proof (ZKP) presentations 
 * The relationship between the circuit provider and the circuit registry.
 * The selection of a trusted issuer.
 
-Pseudonyms, ZKP proof systems referenced herein, and circuit definitions are defined externally in:
+ZKP proof systems and circuit definitions referenced herein are defined externally in:
 
-* Source for pseudonym spec.
 * Source for proof systems.
 * Source for circuit definitions.
+
+Pseudonym derivation is normatively defined in this document.
 
 Approved circuit verification hashes and parameter mappings are maintained in a registry of approved circuits.
 
@@ -62,21 +63,13 @@ In tables, REQ is short for REQUIRED, OPT is short for OPTIONAL, CON is short fo
 
 For ISO/IEC 18013-5 encoded attestations:
 
-* The MSO `validityInfo` MUST contain `signed`, `validFrom` and `validUntil`
-  as defined in ISO/IEC 18013-5.
+* The MSO `validityInfo` MUST contain `signed`, `validFrom` and `validUntil` as defined in ISO/IEC 18013-5.
 * The MSO `digestAlgorithm` MUST be `"SHA-256"`.
-* `deviceKeyInfo.deviceKey` MUST contain the public key of a device key pair
-  whose private key is protected by [hardware / WSCD reference].
-* `issuerAuth` MUST carry the `x5chain` header parameter (label 33) in its
-  unprotected header, containing the Document Signer certificate. The
+* `deviceKeyInfo.deviceKey` MUST contain the public key of a device key pair whose private key is protected by [hardware / WSCD reference].
+* `issuerAuth` MUST carry the `x5chain` header parameter (label 33) in its unprotected header, containing the Document Signer certificate. The
   `issuerAuth` signature MUST verify under the public key in that certificate.
 
-> **NOTE:** Attestation authenticity is established by the `issuerAuth`
-> signature and its certificate chain. In a `circuit_zk` presentation the
-> signature is verified inside the circuit against the issuer public key set;
-> neither the MSO nor the certificate is disclosed. Certificate chain
-> validation therefore happens when the issuer public key set is built, not
-> inside the circuit.
+> **NOTE:** Attestation authenticity is established by the `issuerAuth` signature and its certificate chain. In a `circuit_zk` presentation the signature is verified inside the circuit against the issuer public key set. Certificate chain validation happens when the issuer public key set is built.
 
 ---
 
@@ -322,12 +315,13 @@ The configuration properties are as follows:
 2. `prover_input` is the SHA256 digest of a user-supplied value; shared across the sites the user wants to be linked across.
 3. `verifier_input` is null (32 zero bytes).
 
-Wallet Units MAY add additional entropy to the user-supplied value to make remapping harder.
+Wallet Units MAY add additional entropy to the user-supplied value.
 
 Properties:
 
 * The same pseudonym value can be presented to different verifiers.
-* Remapping the pseudonym to an identity is as hard as brute forcing the `prover_input`.
+* Remapping the pseudonym to an identity is as hard as brute forcing the `prover_input`, which is only intractable if that value has
+  sufficient entropy.
 * Does not offer sybil resistance.
 * Does not support known offender matching.
 
@@ -353,6 +347,8 @@ At least one parameter MUST be present. Dates are RFC 3339 `full-date` strings. 
 A `req` MUST NOT contain more than one `age_check` item. A Wallet Unit MUST treat a request containing more than one `age_check` item as unsatisfiable.
 
 If both `ge` and `le` are present, the Wallet Unit MUST treat the request as unsatisfiable when `le < ge` or when `le − ge + 1` (counted in days) is less than 365.
+
+If the predicate does not hold for the attestation's `birth_date`, the request is unsatisfiable and the Wallet Unit MUST NOT produce a presentation.
 
 # Presentation
 
