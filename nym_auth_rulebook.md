@@ -216,7 +216,7 @@ If a Wallet Unit receives a request for a function `id` not defined below or not
 
 ## Pseudonym generation function (`pseudonym-v1-sha256`)
 
-Derives a deterministic pseudonym using the SHA-256 instantiation defined in [ETSI SOURCE]().
+Derives a deterministic pseudonym using the SHA-256 instantiation.
 
 * Function identifier (`id`): `"pseudonym-v1-sha256"`.
 * Source attribute: `ssc` (or `psc` when configured). Note that the generation does not use `ssc` or `psc` directly, but their openings (`secret_seed` and `private_seed`).
@@ -243,7 +243,7 @@ All configurations generate the pseudonym as: `pseudonym = SHA256(DST || {secret
 
 #### `known-offender-matching-ssc`
 
-The `known-offender-matching-ssc` configuration is defined in [ETSI SOURCE]() as follows:
+The `known-offender-matching-ssc` configuration is defined as follows:
 
 1. `attribute_source` is the `ssc` (issuer known seed commitment) value from the `nym_auth` attestation. Used to assert `SHA256(secret_seed) == ssc`; generation uses `secret_seed`.
 2. `prover_input` is null (32 zero bytes).
