@@ -103,9 +103,16 @@ The map and all contained data items MUST be encoded according to RFC 8949, Sect
 
 This profile extends OpenID4VP Digital Credentials Query Language (DCQL) for zero-knowledge circuit presentations. 
 
-A Wallet Unit that does not support the format `circuit_zk` cannot satisfy the Credential Query and MUST NOT return any. For `"format": "circuit_zk"`, issuer-signed attributes are never disclosed directly. All calculations and assertions MUST be requested inside `req`.
+A Wallet Unit that does not support the `circuit_zk` format cannot match a Credential Query that uses it, and therefore returns no presentation for it. For `"format": "circuit_zk"`, issuer-signed attributes are never disclosed directly. All calculations and assertions MUST be requested inside `req`.
 
-A Wallet Unit MUST treat an option as unsatisfiable if it encounters an unknown function `id`, undeclared or invalid `parameters`, if no approved circuit is available for the requested combination of statement, or if the circuit does not support the request function or parameters. If an option is unsatisfiable, the wallet unit MUST reply with an Error Response as defined in OID4VP 1.0 [Section 8.5](https://openid.net/specs/openid-4-verifiable-presentations-1_0.html#name-error-response).
+### Unsatisfiable Credential Queries
+
+An unsatisfiable request makes the affected Credential Query unsatisfiable; whether the Authorization Request can still be fulfilled follows the DCQL rules of OpenID4VP 1.0, including `credential_sets`. If it cannot, the Wallet Unit returns an Error Response (OpenID4VP 1.0, Section 8.5):
+
+* `invalid_request` MAY be used if the cause is independent of the Holder's attestation data.
+* Otherwise `access_denied` MUST be used, without `error_description`.
+
+> **NOTE:** `access_denied` is also returned when the user declines, so data-dependent failures are indistinguishable from refusal. 
 
 ## Query structure
 
@@ -280,7 +287,7 @@ Derives a deterministic pseudonym using the SHA-256 instantiation.
 
 * Function identifier (`id`): `"pseudonym-v1-sha256"`.
 * Source attribute: `ssc` (or `psc` when configured). Note that the generation does not use `ssc` or `psc` directly, but their openings (`secret_seed` and `private_seed`).
-* Output: A 32-byte base64url-encoded string placed in `results[<handle>]`.
+* Output: a 32-byte value (`PseudonymValue`) placed in `results[<handle>]`.
 
 ### Verifier identity
 
@@ -414,14 +421,15 @@ Each registry entry MUST specify:
 * the circuit identifier,
 * the proof system,
 * the underlying credential format and doctype/vct,
-* the supported functions, and parameters, and
+* the supported functions, and parameters,
+* the representation of the issuer public key set, and
 * the ordered list of public inputs with how the Verifier derives each one.
 
 ## Input and output classification
 
 The following MUST be private inputs: `secret_seed`, `private_seed`, `prover_input`, `birth_date`, all issuer-signed data and digests, the issuer signature, the device public key and device signature.
 
-The following MUST be public inputs: `verifier_input`, the session binding values defined by the registry entry, all function parameters values in `req`, the current time when validity is checked, and the issuer public key set.
+The following MUST be public inputs: `verifier_input`, the session binding values defined by the registry entry, all function parameters values in `req`, `proof_time` when validity is checked, and the issuer public key set.
 
 The pseudonym and predicate results are public outputs.
 
