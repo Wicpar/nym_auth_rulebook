@@ -305,7 +305,7 @@ Properties:
 
 Zero-knowledge comparison operators operating strictly over the `birth_date` attribute (`#6.1004(tstr)`). Used to prove age thresholds, or ranges.
 
-> **NOTE:** Date predicates in this version does not support exact date matches. Because an range can be used to get exact date match restrictions on the interval between the lower and upper bound are needed. These restrictions are use case specific.
+> **NOTE:** Date predicates in this version does not support exact date matches. Because a range can be used to get exact date match restrictions on the interval between the lower and upper bound are needed. The restrictions herein are not generally applicable to other date ranges.
 
 * Function identifier (`id`): `"age_check"`.
 * Source attribute: `birth_date`.
