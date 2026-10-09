@@ -23,6 +23,7 @@ This version 0.1 targets circuit-based Zero-Knowledge Proof (ZKP) presentations 
 * SD-JWT VC encodings.
 * Details on revocation and validity checks. The circuit checks these using a yet to be mandated mechanism.
 * The relationship between the circuit provider and the circuit registry.
+* The selection of a trusted issuer.
 
 Pseudonyms, ZKP proof systems referenced herein, and circuit definitions are defined externally in:
 
@@ -222,7 +223,7 @@ Derives a deterministic pseudonym using the SHA-256 instantiation.
 * Function identifier (`id`): `"pseudonym-v1-sha256"`.
 * Source attribute: `ssc` (or `psc` when configured). Note that the generation does not use `ssc` or `psc` directly, but their openings (`secret_seed` and `private_seed`).
 * Output: A 32-byte base64url-encoded string placed in `results[<handle>]`.
-* When a configuration requires a verifier identity, the Wallet Unit must check whether an intermediary is used. When an intermediary acts as the Relying Party, the Wallet Unit MUST NOT use an intermediary `client_id` and MUST use the end Relying Party identifier. If the end Relying Party identifier cannot be ascertained, the Wallet Unit MUST NOT present a pseudonym.
+* When a configuration requires a verifier identity, the Wallet Unit MUST check whether an intermediary is used. When an intermediary acts as the Relying Party, the Wallet Unit MUST NOT use an intermediary `client_id` and MUST use the end Relying Party identifier. If the end Relying Party identifier cannot be ascertained, the Wallet Unit MUST NOT present a pseudonym.
 * Wallet Units MUST NOT use the `x509_hash` as a source for the end Relying Party identity.
 
 > **NOTE 1:** It is unclear how the Wallet Unit can determine that it is interacting with an intermediary without doing a lookup against a still undefined association list.
@@ -348,11 +349,13 @@ The following MUST be public inputs: `verifier_input`, the session binding value
 
 The pseudonym and predicate results are public outputs.
 
-## Presentation flow initiation
+### Capability negotiation
 
-When the Authorization Request uses `request_uri_method=post`, the Wallet Unit MAY send capability information in `wallet_metadata`, and the Verifier SHOULD tailor the Request Object to them.
+The Verifier signals the proof systems and circuits it accepts in `client_metadata.vp_formats_supported.circuit_zk`, using the parameters defined above.
 
-Correspondingly, for a verifier-initiated flow, the verifier can announce its capabilities inside `client_metadata.vp_formats_supported` and list supported proof systems (e.g., `circuit_proof_system_values: ["longfellow-libzk-v1", "vega-v2", ...]`), and circuit identifiers (e.g., `circuit_id_values: ["urn:circuits:longfellow:nym_auth:v1", "urn:circuits:vega:nym_auth:v5"]`).
+When the Authorization Request uses `request_uri_method=post`, the Wallet Unit MAY send the same parameters in `wallet_metadata.vp_formats_supported.circuit_zk`, and the Verifier SHOULD tailor the Request Object to them.
+
+Over DCAPI, the Wallet Unit cannot send `wallet_metadata`. The Verifier SHOULD therefore list every proof system and circuit identifier it accepts, and the Wallet Unit selects among them.
 
 ## The `circuit_zk` format
 
@@ -364,12 +367,16 @@ metadata (`wallet_metadata`):
 
 When the Verifier provides these parameters, the Wallet Unit MUST select an approved circuit whose proof system and identifier are both listed and which supports every item in `req`; if none exists, the request is unsatisfiable. The presentation response MUST identify the circuit identifier used.
 
-The `circuit_zk` format does not use `claims`. All requests must be present in `req`. This version does not define a `req_sets` (corresponding to `claim_sets`).
+The `circuit_zk` format does not use `claims`. All requests MUST be present in `req`. This version does not define a `req_sets` (corresponding to `claim_sets`).
 
 For `circuit_zk`, the `meta` object MUST contain exactly one of:
 
 * `doctype_value` (string): the ISO/IEC 18013-5 `docType` of the underlying ISO/IEC 18013-5 attestation.
 * `vct_values` (array of strings): reserved for a future SD-JWT VC binding (not defined in this version). 
+
+### Holder binding
+
+`require_cryptographic_holder_binding` MUST be absent or `true`. A Wallet Unit MUST treat a Credential Query with `require_cryptographic_holder_binding: false` as unsatisfiable.
 
 ## Binding
 
