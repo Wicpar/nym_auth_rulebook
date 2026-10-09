@@ -21,7 +21,7 @@ This version 0.1 targets circuit-based Zero-Knowledge Proof (ZKP) presentations 
 * Non-circuit ZKPs (like BBS and other zero-knowledge signature formats).
 * Non-ZKP fallbacks.
 * SD-JWT VC encodings.
-* Revocation and validity checks. The circuit checks these using a mandated mechanism.
+* Details on revocation and validity checks. The circuit checks these using a yet to be mandated mechanism.
 
 Pseudonyms, ZKP proof systems referenced herein, and circuit definitions are defined externally in:
 
