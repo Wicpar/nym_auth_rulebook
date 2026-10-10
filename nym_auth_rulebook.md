@@ -59,7 +59,7 @@ In tables, REQ is short for REQUIRED, OPT is short for OPTIONAL, CON is short fo
 | **secret_seed_commitment** | `ssc` | `bstr` (32 bytes) | REQ | **Issuer Known Seed Commitment**: $`C = \text{SHA-256}(\text{secret\_seed})`$ where $`\text{secret\_seed}`$ is a 16-byte random shared secret between the issuer and prover. |
 | **private_seed_commitment** | `psc` | `bstr` (32 bytes) | OPT | **Issuer Unknown Seed Commitment**: $`C = \text{SHA-256}(\text{private\_seed})`$ where $`\text{private\_seed}`$ is a 16-byte random value known only to the prover. |
 
-## Mobile security object requirements
+## Mobile Security Object requirements
 
 For ISO/IEC 18013-5 encoded attestations:
 
@@ -114,7 +114,7 @@ Issuers SHOULD issue attestations conforming to the compact profile.
 
 A registry entry MAY target the compact profile. The registry MUST contain at least one approved circuit that supports every function and configuration defined in this document and accepts any ISO/IEC 18013-5 conformant encoding. A Wallet Unit SHOULD use a compact-profile circuit when its attestation conforms and the Verifier accepts one.
 
-# DCQL Profile and Presentation Syntax (`circuit_zk`)
+# DCQL profile and presentation syntax (`circuit_zk`)
 
 ## Overview and fail-closed design
 
