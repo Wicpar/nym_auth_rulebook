@@ -1,7 +1,7 @@
 ---
 title: "Nym-authentication Attestation Specification and Rulebook"
 author: "Peter Altmann & Frederic Nieto"
-version: "0.1"
+version: "0.2"
 status: "public draft"
 date: "2026-10-09"
 ---
@@ -95,7 +95,9 @@ ssc_type = bstr .size 32
 psc_type = bstr .size 32
 ```
 
-The map and all contained data items MUST be encoded according to RFC 8949, Section 4.2.1 (Core Deterministic Encoding Requirements). The `birth_date` value MUST be a CBOR tag 1004 text string conforming to RFC 8943, containing a valid RFC 3339 `full-date`.
+Each data element is issued as a separate `IssuerSignedItem` as defined in ISO/IEC 18013-5. `birth_date` MUST be a CBOR tag 1004 text string (RFC 8943) containing an RFC 3339 `full-date`.
+
+Approved circuits MUST accept any encoding of these data elements and of the MSO that conforms to ISO/IEC 18013-5.
 
 ## Compact profile
 
@@ -110,7 +112,7 @@ An attestation conforms to the compact profile if, in addition to ISO/IEC 18013-
 
 Issuers SHOULD issue attestations conforming to the compact profile.
 
-A registry entry MAY target the compact profile. For every supported combination of functions, the registry MUST contain at least one approved circuit that accepts any ISO/IEC 18013-5 conformant encoding. A Wallet Unit SHOULD use a compact-profile circuit when its attestation conforms and the Verifier accepts one.
+A registry entry MAY target the compact profile. The registry MUST contain at least one approved circuit that supports every function and configuration defined in this document and accepts any ISO/IEC 18013-5 conformant encoding. A Wallet Unit SHOULD use a compact-profile circuit when its attestation conforms and the Verifier accepts one.
 
 # DCQL Profile and Presentation Syntax (`circuit_zk`)
 
@@ -223,12 +225,15 @@ encoding):
 
 Illustrative only. The example below will be updated to align with the OpenID drafts.
 
+The example shows the decoded payload of a signed Request Object (`openid4vp-v1-signed`), passed to the Digital Credentials API. The JWS is signed with the key of the Verifier's access certificate, carried in the `x5c` header; the leaf certificate MUST contain `rp.example.com` as a dNSName SAN.
+
 ```json
 {
   "response_type": "vp_token",
   "response_mode": "dc_api.jwt",
   "nonce": "n-0S6_WzA2Mj",
   "client_id": "x509_san_dns:rp.example.com",
+  "expected_origins": ["https://rp.example.com"],
   "client_metadata": {
     "jwks": {
       "keys": [
@@ -294,7 +299,7 @@ Functions invoked inside req MUST be registered in this specification or an offi
 2. The implicit credential source attribute(s) bound to the computation.
 3. The expected output representation in the presentation response `results` map.
 
-If a Wallet Unit receives a request for a function `id` not defined below or not listed in an approved circuit for the `doctype_value`, the affected option MUST be treated as unsatisfiable.
+If a Wallet Unit receives a request for a function `id` not defined below or not listed in an approved circuit for the `doctype_value`, the request is unsatisfiable.
 
 ## Pseudonym generation function (`pseudonym-v1-sha256`)
 
