@@ -16,7 +16,7 @@ This document specifies the natural-person anonymous/pseudonymous authentication
 2. Generate a zero-knowledge proof of correct pseudonym generation.
 3. Prove zero-knowledge date-based predicates (e.g., age checks).
 
-This version 0.1 targets circuit-based Zero-Knowledge Proof (ZKP) presentations using the `circuit_zk` presentation format over an ISO/IEC 18013-5 compliant attestation. The following are out of scope:
+This version targets circuit-based Zero-Knowledge Proof (ZKP) presentations using the `circuit_zk` presentation format over an ISO/IEC 18013-5 compliant attestation. The following are out of scope:
 
 * Non-circuit ZKPs (like BBS and other zero-knowledge signature formats).
 * Non-ZKP fallbacks.
@@ -223,9 +223,9 @@ encoding):
 
 ## Example DCQL request
 
-Illustrative only. The example below will be updated to align with the OpenID drafts.
-
 The example shows the decoded payload of a signed Request Object (`openid4vp-v1-signed`), passed to the Digital Credentials API. The JWS is signed with the key of the Verifier's access certificate, carried in the `x5c` header; the leaf certificate MUST contain `rp.example.com` as a dNSName SAN.
+
+> **NOTE:** The example will be updated to align with the OpenID drafts.
 
 ```json
 {
