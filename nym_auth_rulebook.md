@@ -333,7 +333,9 @@ The Wallet Unit MUST treat the request as unsatisfiable if:
 * `verifier_id_type` is `x509_san_dns` and the registration certificate identifies an intermediary.
 
 > **NOTE 1:** The two identifier types yield unrelated pseudonyms for the same Relying Party. A Verifier that changes `verifier_id_type` or its identifier loses continuity with existing pseudonyms.
+
 > **NOTE 2:** Outside the EUDIW ecosystem intermediaries cannot be detected; with `x509_san_dns` the pseudonym is then distinct per access-certificate holder, not per end Relying Party.
+
 > **NOTE 3:** Within the EUDIW, an intermediary acting without a registration certificate presents its own semantic identifier, so end Relying Parties behind it share a pseudonym space.
 
 ### Parameters
@@ -369,6 +371,7 @@ The configuration's properties are as follows:
 * It supports known offender matching.
 
 > **NOTE 1**: If the issuer known seed changes, so does the pseudonym generated. A ban can be evaded by changing the issuer to one using a different issuer known seed.
+
 > **NOTE 2**: If the `verifier_input` changes, so does the pseudonym generated. Known offender matching is not possible if the Verifier identity changes.
 
 #### `known-offender-matching-psc`
@@ -384,6 +387,7 @@ The configuration's properties are as follows:
 * To support known offender matching, the issuer MUST only allow one `psc` per identity subject.
 
 > **NOTE 1**: If the issuer changes, it may allow a new `psc`, which changes the pseudonym generated.
+
 > **NOTE 2**: If the `verifier_input` changes, so does the pseudonym generated. Known offender matching is not possible if the Verifier identity changes.
 
 #### `account-recovery-ssc`
