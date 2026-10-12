@@ -265,6 +265,7 @@ The example shows the decoded payload of a signed Request Object (`openid4vp-v1-
         "id": "nym_attestation",
         "format": "circuit_zk",
         "meta": {
+          "source_format": "mdoc_mso",
           "doctype_value": "eu.europa.ec.eudi.nym_auth.1"
         },
         "req": [
