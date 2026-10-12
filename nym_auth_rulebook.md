@@ -233,7 +233,9 @@ The example shows the decoded payload of a signed Request Object (`openid4vp-v1-
   "response_mode": "dc_api.jwt",
   "nonce": "n-0S6_WzA2Mj",
   "client_id": "x509_san_dns:rp.example.com",
-  "expected_origins": ["https://rp.example.com"],
+  "expected_origins": [
+    "https://rp.example.com"
+  ],
   "client_metadata": {
     "jwks": {
       "keys": [
@@ -268,29 +270,33 @@ The example shows the decoded payload of a signed Request Object (`openid4vp-v1-
           "source_format": "mdoc_mso",
           "doctype_value": "eu.europa.ec.eudi.nym_auth.1"
         },
-        "req": [
-          {
-            "id": "pseudonym-v1-sha256",
-            "return": "nym-123",
-            "params": {
-              "config": "known-offender-matching-ssc",
-              "verifier_id_type": "x509_san_dns"
+        "claims": {
+          "_req": [
+            {
+              "fn_id": "pseudonym-v1-sha256",
+              "return": "nym-123",
+              "params": {
+                "config": "known-offender-matching-ssc",
+                "verifier_id_type": "x509_san_dns"
+              }
+            },
+            {
+              "fn_id": "age_check",
+              "return": "age-range-123",
+              "params": {
+                "ge": "2008-10-10",
+                "le": "2013-10-09"
+              }
             }
-          },
-          {
-            "id": "age_check",
-            "return": "age-range-123",
-            "params": {
-              "ge": "2008-10-10",
-              "le": "2013-10-09"
-            }
-          }
-        ]
+          ]
+        }
       }
     ]
   }
 }
 ```
+
+> **NOTE:** Show variations of the sibling vs nesting between `claims` and `_req`
 
 # Function catalogue
 
