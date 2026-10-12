@@ -274,7 +274,7 @@ The example shows the decoded payload of a signed Request Object (`openid4vp-v1-
           "_req": [
             {
               "fn_id": "pseudonym-v1-sha256",
-              "return": "nym-123",
+              "id": "nym-123",
               "params": {
                 "config": "known-offender-matching-ssc",
                 "verifier_id_type": "x509_san_dns"
@@ -282,7 +282,7 @@ The example shows the decoded payload of a signed Request Object (`openid4vp-v1-
             },
             {
               "fn_id": "age_check",
-              "return": "age-range-123",
+              "id": "age-range-123",
               "params": {
                 "ge": "2008-10-10",
                 "le": "2013-10-09"
@@ -295,6 +295,7 @@ The example shows the decoded payload of a signed Request Object (`openid4vp-v1-
   }
 }
 ```
+> NOTE: Check where the function outputs defined.
 
 > **NOTE:** Show variations of the sibling vs nesting between `claims` and `_req`
 
