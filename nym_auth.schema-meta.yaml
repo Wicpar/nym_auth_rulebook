@@ -2,3 +2,4 @@
 # SD-JWT VC encodings are out of scope for rulebook v0.2, so there is no .vctm.json)
 attestation_los: iso_18045_basic
 binding_type: key
+version: "0.2.0"
