@@ -299,6 +299,8 @@ The example shows the decoded payload of a signed Request Object (`openid4vp-v1-
 ```
 > NOTE: Check where the function outputs defined.
 
+> NOTE: `format` is the expected format of the attestation that wraps the response, and NOT the source format of the attestation, or the vp_formats_supported etc.
+
 > **NOTE:** Show variations of the sibling vs nesting between `claims` and `_req`
 
 # Function catalogue
