@@ -1,7 +1,7 @@
 ---
 title: "Nym-authentication Attestation Specification and Rulebook"
 author: "Peter Altmann & Frederic Nieto"
-version: "0.2"
+version: "0.3"
 status: "public draft"
 date: "2026-10-09"
 ---
