@@ -227,6 +227,8 @@ The example shows the decoded payload of a signed Request Object (`openid4vp-v1-
 
 > **NOTE:** The example will be updated to align with the OpenID drafts.
 
+EXAMPLE BELOW IS WORK IN PROGRESS AND BEING REVISED.
+
 ```json
 {
   "response_type": "vp_token",
@@ -252,12 +254,15 @@ The example shows the decoded payload of a signed Request Object (`openid4vp-v1-
     },
     "vp_formats_supported": {
       "circuit_zk": {
-        "circuit_proof_system_values": [
-          "longfellow-libzk-v1"
-        ],
-        "circuit_id_values": [
-          "urn:circuits:longfellow:nym_auth:v1"
-        ]
+        "fn_id": "circuit_zk_longfellow",
+        "input": base64of: {
+          "circuit_proof_system_values": [
+            "longfellow-libzk-v1"
+          ],
+          "circuit_id_values": [
+            "urn:circuits:longfellow:nym_auth:v1"
+          ]
+        }
       }
     }
   },
@@ -271,6 +276,8 @@ The example shows the decoded payload of a signed Request Object (`openid4vp-v1-
           "doctype_value": "eu.europa.ec.eudi.nym_auth.1"
         },
         "claims": {
+          "fn_id":
+          "input": base64:
           "_req": [
             {
               "fn_id": "pseudonym-v1-sha256",
@@ -278,7 +285,11 @@ The example shows the decoded payload of a signed Request Object (`openid4vp-v1-
               "params": {
                 "config": "known-offender-matching-ssc",
                 "verifier_id_type": "x509_san_dns",
-                "source": {"path": ["ssc"]}
+                "source": {
+                  "path": [
+                    "ssc"
+                  ]
+                }
               }
             },
             {
@@ -287,7 +298,11 @@ The example shows the decoded payload of a signed Request Object (`openid4vp-v1-
               "params": {
                 "ge": "2008-10-10",
                 "le": "2013-10-09",
-                "source": {"path": ["birth_date"]}
+                "source": {
+                  "path": [
+                    "birth_date"
+                  ]
+                }
               }
             }
           ]
