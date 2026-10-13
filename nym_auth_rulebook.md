@@ -277,7 +277,8 @@ The example shows the decoded payload of a signed Request Object (`openid4vp-v1-
               "id": "nym-123",
               "params": {
                 "config": "known-offender-matching-ssc",
-                "verifier_id_type": "x509_san_dns"
+                "verifier_id_type": "x509_san_dns",
+                "source": {"path": ["ssc"]}
               }
             },
             {
@@ -285,7 +286,8 @@ The example shows the decoded payload of a signed Request Object (`openid4vp-v1-
               "id": "age-range-123",
               "params": {
                 "ge": "2008-10-10",
-                "le": "2013-10-09"
+                "le": "2013-10-09",
+                "source": {"path": ["birth_date"]}
               }
             }
           ]
