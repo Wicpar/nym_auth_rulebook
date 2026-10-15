@@ -343,7 +343,7 @@ Configurations that use `verifier_input` derive it from `verifier_id`, a UTF-8 s
 
 The `verifier_id_type` is one of the following, and no other value is defined by this specification:
 
-* `semantic`: `"semantic_id:"` followed by the end Relying Party's semantic identifier as defined in ETSI TS 119 475, Section 5.1.3 (legal persons) or Section 5.1.5 (natural persons). The Wallet Unit MUST take it from the registration certificate when one is present, and otherwise from the access certificate.
+* `semantic`: `"semantic_id:"` followed by the end Relying Party's semantic identifier as defined in ETSI TS 119 475, Section 5.1.3 (legal persons) or Section 5.1.5 (natural persons). The Wallet Unit MUST take it from the access certificate used to sign the request.
 * The name of an OpenID4VP Client Identifier Prefix (`client_id_type`), for which `verifier_id` is the identifier the Client Identifier binds to the Verifier, without the prefix and its colon:
   * `x509_san_dns`: the dNSName Subject Alternative Name of the access certificate used to sign the request, in ASCII lower case and without a trailing dot.
   * `x509_san_uri`: the uniformResourceIdentifier Subject Alternative Name of the access certificate used to sign the request, exactly as bound.
