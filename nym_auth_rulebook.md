@@ -194,7 +194,7 @@ To verify a presentation, the Verifier:
 3. assembles the public inputs in the order defined by the registry entry,
    taking `issuer_key_set`, `proof_time` and the values in `results` from the
    presentation, and recomputing all other public inputs itself (session
-   binding values, `verifier_input`, and the `req` parameters it sent);
+   binding values, `verifier_input` from the bare `verifier_id`, and the `req` parameters it sent);
 4. verifies `proof` against the circuit and the assembled public inputs.
 
 The Verifier MUST NOT take any public input other than `issuer_key_set`,
@@ -366,6 +366,25 @@ A Wallet Unit MUST treat the request as unsatisfiable if:
 
 > **NOTE 4:** A trust framework can state a single `verifier_id_type`, or an ordered list from which a Wallet Unit uses the first type for which it can obtain a `verifier_id`. The choice is not signalled in the request.
 
+### Verifier input
+
+The `verifier_input` is computed over the bare `verifier_id` value, as defined above, and over nothing else:
+
+* The hashed input is the UTF-8 encoding of `verifier_id` itself: for `x509_san_dns` the dNSName without any prefix, for `semantic` the string `semantic_id:` followed by the identifier (this is part of the `semantic` value form, not a Client Identifier Prefix).
+* The hashed input MUST NOT be the Client Identifier of the request (the `client_id` parameter), and MUST NOT include a Client Identifier Prefix and its colon. `client_id` as it appears in the request is never an input to the pseudonym function.
+* The `verifier_id_type` is agreed out of band in the trust framework and is not part of the hashed input.
+
+EXAMPLE: A Verifier whose access certificate has the dNSName `verifier.example` and whose request carries `client_id` `x509_san_dns:verifier.example`:
+
+| | Hashed input (UTF-8) | `SHA256(input)` |
+|---|---|---|
+| MUST be hashed | `verifier.example` | `be6a640065a5fbf9102fd7b3c4e6c02d89bffcf77cfdef6c95eaec007d624a41` |
+| MUST NOT be hashed | `x509_san_dns:verifier.example` | `6eae85a0b2dfcd7d8b716291e54a004da798f93a26a248c265becd33a04a6bab` |
+
+With `known-offender-matching-ssc` and a `secret_seed` of `4a8f9c1d2e3f4a5b6c7d8e9f0a1b2c3d`, the conforming pseudonym is `51ae6c39cfbfd99cf6c428111de556bf059765553ccb00e2a0136571291cdc9e`. The non-conforming pseudonym obtained from the prefixed form is `155f433796d1f282268a87100cd08510893f97f6e5607bc5e4c66afadb71aad1`.
+
+> **NOTE:** A circuit specification or implementation that defines `verifier_input` as `SHA256(client_id)` with the Client Identifier Prefix included, or that otherwise hashes the `client_id` of the request, is non-conforming with this specification. Its published test values, if derived that way, need to be regenerated from the bare `verifier_id`.
+
 ### Parameters
 
 This specification version enables the following function parameters.
@@ -389,7 +408,7 @@ The `known-offender-matching-ssc` configuration is defined as follows:
 
 1. `attribute_source` is the `ssc` (issuer known seed commitment) value from the `nym_auth` attestation. Used to assert `SHA256(secret_seed) == ssc`; generation uses `secret_seed`.
 2. `prover_input` is null (32 zero bytes).
-3. `verifier_input` is `SHA256(verifier_id)`, with `verifier_id` as defined in the Verifier identity subsection.
+3. `verifier_input` is `SHA256(verifier_id)`, with `verifier_id` the bare value as defined in the Verifier identity and Verifier input subsections (never the `client_id` of the request).
 
 The configuration's properties are as follows:
 
@@ -405,7 +424,7 @@ The configuration's properties are as follows:
 
 1. `attribute_source` is the `psc` (issuer unknown seed commitment) value from the `nym_auth` attestation. Used to assert `SHA256(private_seed) == psc`; generation uses `private_seed`.
 2. `prover_input` is null (32 zero bytes).
-3. `verifier_input` is `SHA256(verifier_id)`, with `verifier_id` as defined in the Verifier identity subsection.
+3. `verifier_input` is `SHA256(verifier_id)`, with `verifier_id` the bare value as defined in the Verifier identity and Verifier input subsections (never the `client_id` of the request).
 
 The configuration's properties are as follows:
 
@@ -421,7 +440,7 @@ The configuration's properties are as follows:
 
 1. `attribute_source` is the `ssc` (issuer known seed commitment) value from the `nym_auth` attestation. Used to assert `SHA256(secret_seed) == ssc`; generation uses `secret_seed`.
 2. `prover_input` is null (32 zero bytes).
-3. `verifier_input` is `SHA256(SHA256(verifier_id) || SHA256(verifier_context))`, with `verifier_id` as defined in the Verifier identity subsection and `verifier_context` UTF-8 encoded as supplied by the Verifier.
+3. `verifier_input` is `SHA256(SHA256(verifier_id) || SHA256(verifier_context))`, with `verifier_id` the bare value as defined in the Verifier identity and Verifier input subsections (never the `client_id` of the request) and `verifier_context` UTF-8 encoded as supplied by the Verifier.
 
 The configuration's properties are as follows:
 
