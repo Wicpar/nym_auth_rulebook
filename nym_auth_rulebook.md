@@ -59,6 +59,8 @@ In tables, REQ is short for REQUIRED, OPT is short for OPTIONAL, CON is short fo
 | **secret_seed_commitment** | `ssc` | `bstr` (32 bytes) | REQ | **Issuer Known Seed Commitment**: $`C = \text{SHA-256}(\text{secret\_seed})`$ where $`\text{secret\_seed}`$ is a 16-byte random shared secret between the issuer and prover. |
 | **private_seed_commitment** | `psc` | `bstr` (32 bytes) | OPT | **Issuer Unknown Seed Commitment**: $`C = \text{SHA-256}(\text{private\_seed})`$ where $`\text{private\_seed}`$ is a 16-byte random value known only to the prover. |
 
+> **NOTE (non-normative, for reference):** The issuer delivers the `secret_seed` to the Wallet Unit in the OpenID4VCI 1.1 response-level `credential_metadata`, as member `org.siros.secret_seed` (namespace to 32 lowercase hex characters), as specified in sirosfoundation/privatedata-spec PR #4, Section 5A (spec 2.4). This delivery requires a JWE-encrypted Credential Response and a `notification_id`. Consequently, deferred issuance of `nym_auth` is not supported at present: current engines and Wallet Units treat a Deferred Credential Response as plain and refuse a seed in it. Issuers MUST therefore issue `nym_auth` credentials immediately (no `transaction_id` flow) until seed delivery over an encrypted deferred response is specified. This is a known limitation, not a design goal, and is expected to be revisited if deferred issuance becomes necessary.
+
 ## Mobile Security Object requirements
 
 For ISO/IEC 18013-5 encoded attestations:
