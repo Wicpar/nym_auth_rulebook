@@ -617,7 +617,7 @@ Over the Digital Credentials API, the Wallet Unit cannot send `wallet_metadata`.
 
 A `zkp_req` presentation MUST be bound to the presentation session. The proof MUST verify holder binding over the session binding values defined by the registry entry of the selected system.
 
-For `mso_mdoc`, the circuit MUST verify the device signature over the `DeviceAuthentication` structure, which contains the `SessionTranscript`. The `SessionTranscript` is `[null, null, Handover]`. The `Handover` is the one of the channel the Authorization Request arrived on, constructed exactly as OpenID4VP 1.0 defines it:
+For `mso_mdoc`, the circuit MUST verify the device signature over the `DeviceAuthentication` structure, which contains the `SessionTranscript`. The `SessionTranscript` is `[null, null, Handover]`, with `Handover` as defined in OpenID4VP 1.0 for the channel that carried the Authorization Request:
 
 | Channel | `Handover` | Defined in |
 | :-- | :-- | :-- |
