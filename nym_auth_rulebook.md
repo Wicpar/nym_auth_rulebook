@@ -59,6 +59,12 @@ In tables, REQ is short for REQUIRED, OPT is short for OPTIONAL, CON is short fo
 | **secret_seed_commitment** | `ssc` | `bstr` (32 bytes) | REQ | **Issuer Known Seed Commitment**: $`C = \text{SHA-256}(\text{secret\_seed})`$ where $`\text{secret\_seed}`$ is a 16-byte random shared secret between the issuer and prover. |
 | **private_seed_commitment** | `psc` | `bstr` (32 bytes) | OPT | **Issuer Unknown Seed Commitment**: $`C = \text{SHA-256}(\text{private\_seed})`$ where $`\text{private\_seed}`$ is a 16-byte random value known only to the prover. |
 
+## Non-disclosure of seed commitments
+
+`ssc` and `psc` are stable values that can act as a correlation handle for the Holder.
+
+A Wallet Unit MUST NOT disclose `ssc` or `psc` or `birth_date` in a presentation; a Credential Query that requests any of these values MUST be treated as unsatisfiable.
+
 ## Mobile Security Object requirements
 
 For ISO/IEC 18013-5 encoded attestations:
