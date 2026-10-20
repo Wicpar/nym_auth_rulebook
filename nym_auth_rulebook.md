@@ -67,6 +67,8 @@ In the `bbs_cd` encoding the issuer signs the seed itself as a hidden attribute 
 
 A Wallet Unit MUST NOT disclose `ssc`, `psc`, `secret_seed` or `birth_date` in a presentation; a Credential Query that requests any of these values MUST be treated as unsatisfiable.
 
+A Wallet Unit MUST NOT present a `nym_auth` attestation other than in a `zkp_req` presentation. A Credential Query in another format that would match a `nym_auth` attestation, with or without `claims`, MUST be treated as unsatisfiable for that attestation.
+
 ## Mobile Security Object requirements
 
 For ISO/IEC 18013-5 encoded attestations:
