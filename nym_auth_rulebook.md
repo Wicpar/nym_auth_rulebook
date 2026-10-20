@@ -134,7 +134,7 @@ For attestations in the BBS committed-disclosure encoding, the schema identifier
 | `birth_date` | `date-packed` | 1 | (Y − 1900)·372 + (M − 1)·31 + (D − 1), which preserves date order |
 | `secret_seed` | `nym-seed.issuer-known` | 1 | The pseudonym seed: a 255-bit value chosen and kept by the issuer |
 
-The schema digest is `2b39f8559b7bf2888502ccac0a681538f218bbf792d826cbad482ee487fb6793`.
+The schema digest is `ab4183a9ed0b57d6bfb8994c92b432bb9731a3e2fd974ac2f67422e2f7dfb7e1`.
 
 The issuer signs the messages with BBS; the credential header fixes the schema. No attribute is disclosable: a presentation commits to the attributes it uses and hides the rest.
 
