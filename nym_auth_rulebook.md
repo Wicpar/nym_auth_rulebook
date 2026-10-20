@@ -520,12 +520,22 @@ Over the Digital Credentials API, the Wallet Unit cannot send `wallet_metadata`.
 
 A `circuit_zk` presentation MUST be bound to the presentation session. The circuit MUST verify holder binding over the session binding values defined by the registry entry of the selected circuit.
 
-For attestations identified by `doctype_value` (ISO/IEC 18013-5), the circuit MUST verify the device signature over the `DeviceAuthentication` structure, which contains the `SessionTranscript`. The `SessionTranscript` is `[null, null, Handover]`, with `Handover` constructed as defined in OpenID4VP 1.0 Appendix B.2.6.
+For attestations identified by `doctype_value` (ISO/IEC 18013-5), the circuit MUST verify the device signature over the `DeviceAuthentication` structure, which contains the `SessionTranscript`. The `SessionTranscript` is `[null, null, Handover]`. The `Handover` is the one of the channel the Authorization Request arrived on, and is one of the following two, each constructed exactly as OpenID4VP 1.0 defines it:
+
+| Channel | `Handover` | Defined in |
+| :-- | :-- | :-- |
+| Digital Credentials API | `OpenID4VPDCAPIHandover` = `["OpenID4VPDCAPIHandover", SHA-256(cbor([origin, nonce, jwkThumbprint]))]` | Appendix B.2.6.2 |
+| Redirects, including a request fetched from a `request_uri` that a QR code or a link carries | `OpenID4VPHandover` = `["OpenID4VPHandover", SHA-256(cbor([client_id, nonce, jwkThumbprint, response_uri]))]` | Appendix B.2.6.1 |
+
+In both, `cbor(...)` is the CBOR encoding of the `OpenID4VPHandoverInfo` array, which is hashed as it is and not wrapped in a byte string; `nonce` is the `nonce` request parameter as a text string; and `jwkThumbprint` is the JWK SHA-256 Thumbprint (RFC 7638) of the Verifier's public key that encrypts the response, as a 32-byte byte string, or CBOR `null` when the response is not encrypted. In `OpenID4VPDCAPIHandover`, `origin` is the origin of the calling web page, without the `origin:` prefix. In `OpenID4VPHandover`, `client_id` is the `client_id` request parameter including its Client Identifier Prefix, and `response_uri` is the `response_uri` request parameter (or the `redirect_uri` parameter, when the Response Mode uses it). The values MUST be taken from the signed Request Object, never from the Authorization Request query parameters or from anything the response carries.
+
+The challenge the device key signs is a function of the `SessionTranscript` and the `docType` alone, so it does not depend on the channel once the `SessionTranscript` is fixed. A Wallet Unit MUST build the `Handover` of the channel the request arrived on and MUST NOT build the other one. A Verifier MUST verify a presentation against the `Handover` of the channel on which it issued the request, and MUST reject one made over the other. The two cannot match: their labels, their members and so their hashes differ.
 
 > **NOTE:** The validity date is also a range check, but may employ a different mechanism. As it is a required check, it is not something the verifier includes in `req`.
 
-Over DC API the following applies to bind the pseudonym to the Verifier:
+The following applies to bind the pseudonym to the Verifier, over every channel:
 
-1. Requests for `eu.europa.ec.eudi.nym_auth.1` sent over the Digital Credentials API MUST use the `openid4vp-v1-signed` protocol. An unsigned request MUST be rejected.
+1. Requests for `eu.europa.ec.eudi.nym_auth.1` MUST be signed. Over the Digital Credentials API they MUST use the `openid4vp-v1-signed` protocol; over redirects they MUST be a signed Request Object. An unsigned request MUST be rejected. A Client Identifier Prefix that cannot sign a request (`redirect_uri`) is therefore not usable.
 2. The Wallet Unit MUST validate the Request Object signature and certificate chain according to the Client Identifier Prefix and, over the Digital Credentials API, MUST verify that the calling origin is contained in `expected_origins`.
+3. Over redirects, the Wallet Unit MUST send the Authorization Response only to the `response_uri` (or `redirect_uri`) of the validated Request Object, the same value it puts in the `OpenID4VPHandover`.
 
