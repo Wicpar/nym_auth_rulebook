@@ -442,7 +442,7 @@ This specification version enables the following function parameters.
 | `config` | string | REQ | Identifier for standard configurations. | Allowed values are specified in the configurations below. |
 | `ver` | integer | REQ | Version of the pseudonym function. | `1` in this version. |
 | `prf` | string | REQ | The pseudorandom function. | `sha-256` (`mso_mdoc`, every configuration) or `hashdh-bls12381g1` (`bbs_cd`, `known-offender-matching-ssc` only). |
-| `verifier_context` | string | CON | Additional context supplied by the verifier. | Required for account recovery. MUST NOT be present elsewhere. UTF-8, 1–64 bytes. |
+| `verifier_context` | string | CON | Additional context supplied by the verifier. | Required for account recovery. MUST NOT be present elsewhere. 1 to 64 bytes in its UTF-8 encoding, hashed as sent, without normalization. |
 
 A Wallet Unit MUST treat the request as unsatisfiable if `verifier_context` is absent for a configuration that requires it, present for a configuration that does not allow it, or longer than 64 bytes.
 
