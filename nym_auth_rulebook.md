@@ -617,7 +617,22 @@ Over the Digital Credentials API, the Wallet Unit cannot send `wallet_metadata`.
 
 A `zkp_req` presentation MUST be bound to the presentation session. The proof MUST verify holder binding over the session binding values defined by the registry entry of the selected system.
 
-For `mso_mdoc`, the circuit MUST verify the device signature over the `DeviceAuthentication` structure, which contains the `SessionTranscript`. The `SessionTranscript` is `[null, null, Handover]`, with `Handover` constructed as defined in OpenID4VP 1.0 Appendix B.2.6.
+For `mso_mdoc`, the circuit MUST verify the device signature over the `DeviceAuthentication` structure, which contains the `SessionTranscript`. The `SessionTranscript` is `[null, null, Handover]`, with `Handover` as defined in OpenID4VP 1.0 for the channel that carried the Authorization Request:
+
+| Channel | `Handover` | Defined in |
+| :-- | :-- | :-- |
+| Digital Credentials API | `OpenID4VPDCAPIHandover` = `["OpenID4VPDCAPIHandover", SHA-256(cbor([origin, nonce, jwkThumbprint]))]` | Appendix B.2.6.2 |
+| Redirects, including a request fetched from a `request_uri` that a QR code or a link carries | `OpenID4VPHandover` = `["OpenID4VPHandover", SHA-256(cbor([client_id, nonce, jwkThumbprint, response_uri]))]` | Appendix B.2.6.1 |
+
+The hash input is the CBOR encoding of the array itself. The values are:
+
+* `origin`: the origin of the calling web page.
+* `client_id`: the Client Identifier, including its Client Identifier Prefix.
+* `nonce`: the `nonce` request parameter, as a text string.
+* `response_uri`: the `response_uri` request parameter (or the `redirect_uri` parameter, when the Response Mode uses it).
+* `jwkThumbprint`: the JWK SHA-256 Thumbprint (RFC 7638) of the Verifier's response-encryption key, as a 32-byte byte string. The response is always encrypted.
+
+The Wallet Unit MUST take `client_id`, `nonce`, `response_uri` and the response-encryption key from the validated Request Object, and MUST use the `Handover` of the channel on which it received the request. The Verifier MUST compute the `Handover` itself, from the Request Object it sent and, over the Digital Credentials API, the origin of its web page. It MUST NOT take any `Handover` value from the presentation.
 
 For `bbs_cd`, the scheme's request binds the session. Its audience is SHA-256 of the `OpenID4VPHandoverInfo` bytes (OpenID4VP 1.0 Appendix B.2.6.1), or of the `OpenID4VPDCAPIHandoverInfo` bytes over the Digital Credentials API (Appendix B.2.6.2). Its nonce is the request's `nonce`. The `ecdsa-pop/0.1` plugin proves that the committed `device_key` signed a message bound to that request.
 
@@ -628,3 +643,13 @@ Over DC API the following applies to bind the pseudonym to the Verifier:
 1. Requests for `nym_auth` attestation sent over the Digital Credentials API MUST use the `openid4vp-v1-signed` protocol. An unsigned request MUST be rejected.
 2. The Wallet Unit MUST validate the Request Object signature and certificate chain according to the Client Identifier Prefix and, over the Digital Credentials API, MUST verify that the calling origin is contained in `expected_origins`.
 
+ver redirects, including a request fetched from a `request_uri`, the following applies:
+
+1. Requests for `nym_auth` attestation MUST be signed Request Objects. An unsigned request MUST be rejected, so the `redirect_uri` Client Identifier Prefix is not usable. The Wallet Unit MUST validate the Request Object signature and certificate chain according to the Client Identifier Prefix.
+2. The Wallet Unit MUST send the Authorization Response only to the `response_uri` of the validated Request Object, the value it uses in the `Handover`.
+
+## Response confidentiality
+
+A `zkp_req` presentation MUST be encrypted to the Verifier. The Response Mode MUST be `direct_post.jwt` over redirects and `dc_api.jwt` over the Digital Credentials API, and the Request Object MUST carry the Verifier's response-encryption key in `client_metadata`. A Wallet Unit MUST treat a request with another Response Mode, or without a response-encryption key, as unsatisfiable.
+
+> **NOTE:** The Readdit demo does not encrypt the response, for simplicity. It uses `direct_post`, and its `Handover` has a `null` `jwkThumbprint`.
