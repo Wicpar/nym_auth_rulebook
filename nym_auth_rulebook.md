@@ -290,7 +290,6 @@ Alternative 1 (demo runs this).
             "return": "nym",
             "params": {
               "config": "known-offender-matching-ssc",
-              "verifier_id_type": "x509_san_dns",
               "ver": 1,
               "prf": "sha-256"
             }
@@ -304,90 +303,6 @@ Alternative 1 (demo runs this).
             }
           }
         ]
-      }
-    ]
-  }
-}
-```
-
-Alternative 2. 
-
-```json
-{
-  "response_type": "vp_token",
-  "response_mode": "dc_api.jwt",
-  "nonce": "n-0S6_WzA2Mj",
-  "client_id": "x509_san_dns:rp.example.com",
-  "expected_origins": [
-    "https://rp.example.com"
-  ],
-  "client_metadata": {
-    "jwks": {
-      "keys": [
-        {
-          "kty": "EC",
-          "crv": "P-256",
-          "x": "TCAER19Zvu3OHF4j4W4vfSVoHIP1ILilDls7vCeGemc",
-          "y": "ZxjiWWbZMQGHVWKVQ4hbSIirsVfuecCE6t4jT9F2HZQ",
-          "use": "enc",
-          "alg": "ECDH-ES",
-          "kid": "1"
-        }
-      ]
-    },
-    "vp_formats_supported": {
-      "zkp_req": {
-        "proof_system_values": [
-            "longfellow-libzk-v1"
-        ],
-        "circuit_id_values": [
-            "urn:circuits:longfellow:nym_auth:v1"
-        ]
-        }
-      }
-    }
-  },
-  "dcql_query": {
-    "credentials": [
-      {
-        "id": "nym_attestation",
-        "format": "zkp_req",
-        "meta": {
-          "source_format": "mdoc_mso",
-          "doctype_value": "eu.europa.ec.eudi.nym_auth.1"
-        },
-        "claims": {
-          "fn_id":
-          "input": base64:
-          "_req": [
-            {
-              "fn_id": "pseudonym-v1-sha256",
-              "id": "nym-123",
-              "params": {
-                "config": "known-offender-matching-ssc",
-                "verifier_id_type": "x509_san_dns",
-                "source": {
-                  "path": [
-                    "ssc"
-                  ]
-                }
-              }
-            },
-            {
-              "fn_id": "age_check",
-              "id": "age-range-123",
-              "params": {
-                "ge": "2008-10-10",
-                "le": "2013-10-09",
-                "source": {
-                  "path": [
-                    "birth_date"
-                  ]
-                }
-              }
-            }
-          ]
-        }
       }
     ]
   }
