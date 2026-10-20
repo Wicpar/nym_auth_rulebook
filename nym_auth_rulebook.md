@@ -527,7 +527,7 @@ For attestations identified by `doctype_value` (ISO/IEC 18013-5), the circuit MU
 | Digital Credentials API | `OpenID4VPDCAPIHandover` = `["OpenID4VPDCAPIHandover", SHA-256(cbor([origin, nonce, jwkThumbprint]))]` | Appendix B.2.6.2 |
 | Redirects, including a request fetched from a `request_uri` that a QR code or a link carries | `OpenID4VPHandover` = `["OpenID4VPHandover", SHA-256(cbor([client_id, nonce, jwkThumbprint, response_uri]))]` | Appendix B.2.6.1 |
 
-In both, `cbor(...)` is the CBOR encoding of the `OpenID4VPHandoverInfo` array, which is hashed as it is and not wrapped in a byte string; `nonce` is the `nonce` request parameter as a text string; and `jwkThumbprint` is the JWK SHA-256 Thumbprint (RFC 7638) of the Verifier's public key that encrypts the response, as a 32-byte byte string, or CBOR `null` when the response is not encrypted. In `OpenID4VPDCAPIHandover`, `origin` is the origin of the calling web page, without the `origin:` prefix. In `OpenID4VPHandover`, `client_id` is the `client_id` request parameter including its Client Identifier Prefix, and `response_uri` is the `response_uri` request parameter (or the `redirect_uri` parameter, when the Response Mode uses it). The values MUST be taken from the signed Request Object, never from the Authorization Request query parameters or from anything the response carries.
+In both, `cbor(...)` is the CBOR encoding of the `OpenID4VPHandoverInfo` array, which is hashed as it is and not wrapped in a byte string; `nonce` is the `nonce` request parameter as a text string; and `jwkThumbprint` is the JWK SHA-256 Thumbprint (RFC 7638) of the Verifier's public key that encrypts the response, as a 32-byte byte string. Over the Digital Credentials API it is CBOR `null` when the response is not encrypted, as Appendix B.2.6.2 defines. Over redirects the response is always encrypted (see rule 4 below), so it is never `null`. In `OpenID4VPDCAPIHandover`, `origin` is the origin of the calling web page, without the `origin:` prefix. In `OpenID4VPHandover`, `client_id` is the `client_id` request parameter including its Client Identifier Prefix, and `response_uri` is the `response_uri` request parameter (or the `redirect_uri` parameter, when the Response Mode uses it). The values MUST be taken from the signed Request Object, never from the Authorization Request query parameters or from anything the response carries.
 
 The challenge the device key signs is a function of the `SessionTranscript` and the `docType` alone, so it does not depend on the channel once the `SessionTranscript` is fixed. A Wallet Unit MUST build the `Handover` of the channel the request arrived on and MUST NOT build the other one. A Verifier MUST verify a presentation against the `Handover` of the channel on which it issued the request, and MUST reject one made over the other. The two cannot match: their labels, their members and so their hashes differ.
 
@@ -538,4 +538,24 @@ The following applies to bind the pseudonym to the Verifier, over every channel:
 1. Requests for `eu.europa.ec.eudi.nym_auth.1` MUST be signed. Over the Digital Credentials API they MUST use the `openid4vp-v1-signed` protocol; over redirects they MUST be a signed Request Object. An unsigned request MUST be rejected. A Client Identifier Prefix that cannot sign a request (`redirect_uri`) is therefore not usable.
 2. The Wallet Unit MUST validate the Request Object signature and certificate chain according to the Client Identifier Prefix and, over the Digital Credentials API, MUST verify that the calling origin is contained in `expected_origins`.
 3. Over redirects, the Wallet Unit MUST send the Authorization Response only to the `response_uri` (or `redirect_uri`) of the validated Request Object, the same value it puts in the `OpenID4VPHandover`.
+4. Over redirects, the response MUST be encrypted: the Response Mode MUST be `direct_post.jwt`, and the Request Object MUST carry the Verifier's response-encryption key in `client_metadata`. A Wallet Unit MUST treat a request for `eu.europa.ec.eudi.nym_auth.1` with another Response Mode as unsatisfiable, and a Verifier MUST reject a presentation whose `OpenID4VPHandover` has a `null` `jwkThumbprint`. Over the Digital Credentials API the thumbprint rules of Appendix B.2.6.2 are unchanged.
+
+> **NOTE:** The `client_id` in the `OpenID4VPHandover` is the Client Identifier exactly as in the request, including its Client Identifier Prefix (for example `x509_san_dns:verifier.example`), as Appendix B.2.6.1 requires. The `verifier_input` of a pseudonym function is not derived from it: it is derived from the `verifier_id` of the agreed `verifier_id_type` (see "Verifier identity"), which for a Client Identifier Prefix type is the identifier without the prefix and its colon. Neither value may be substituted for the other. (This note rests on the `verifier_id` / `verifier_input` rules as proposed in #5 and #7, "SHA-256 over the bare verifier_id, never the prefixed client_id"; it states only the separation, so it stays correct whichever of those forms is merged.)
+
+### SD-JWT VC challenge over redirects (PROVISIONAL PROPOSAL)
+
+> **PROVISIONAL.** This version of the rulebook defines `circuit_zk` for mdoc only and reserves `vct_values` for a future SD-JWT VC binding. The following is a proposal for that binding over redirects. It is not normative, and it stays provisional until the authors of the SD-JWT VC circuits confirm it, because new circuits are in preparation and the message is part of what they fix.
+
+The `OpenID4VPHandover` has no SD-JWT VC counterpart, and the circuits' existing SD-JWT VC challenge message is built for the Digital Credentials API: it carries the calling `origin`, which a redirect does not have. The proposal replaces `origin` by the values the mdoc `OpenID4VPHandoverInfo` uses over redirects, in a message of its own so that the two channels cannot be confused:
+
+```
+message = "nym_auth/v1/device-challenge-redirect"
+          || u32be(len nonce) || nonce
+          || u32be(len client_id) || client_id          ; with its Client Identifier Prefix
+          || u32be(len response_uri) || response_uri
+          || jwkThumbprint                              ; 32 bytes, always present (rule 4)
+e2 = SHA-256(message)
+```
+
+The label differs from the Digital Credentials API's `nym_auth/v1/device-challenge`, so a message for one channel never equals one for the other. Open: whether the circuits want this fixed layout, or the SHA-256 of the same CBOR `OpenID4VPHandoverInfo` array the mdoc binding uses (one definition for both formats); and whether the Digital Credentials API message should also gain the `jwkThumbprint`, which it lacks today.
 
