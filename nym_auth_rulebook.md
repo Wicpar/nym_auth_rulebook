@@ -417,7 +417,7 @@ A `_req` MUST NOT contain more than one `pseudonym` item. A Wallet Unit MUST tre
 Configurations that use `verifier_input` derive it from `verifier_id`, a UTF-8 string identifying the Verifier. The request does not select its form. The trust framework under which the Verifier operates MUST fix exactly one form of `verifier_id`, and the Wallet Unit and the Verifier MUST both use that form. The forms a trust framework can fix are:
 
 * `semantic`: `"semantic_id:"` followed by the end Relying Party's semantic identifier as defined in ETSI TS 119 475, Section 5.1.3 (legal persons) or Section 5.1.5 (natural persons). The Wallet Unit MUST take it from the registration certificate when one is present, and otherwise from the access certificate.
-* `x509_san_dns`: the Client Identifier, i.e. `"x509_san_dns:"` followed by the DNS name bound to the access certificate used to sign the request.
+* `x509_san_dns`: the Client Identifier, i.e. `"x509_san_dns:"` followed by the DNS name bound to the access certificate used to sign the request. An internationalised domain name is represented in the A-label form (`xn--...`) in which it appears in the certificate (RFC 5280, Section 7.2). How a name given in another form, such as a U-label, is converted to the A-label form is defined by the trust framework; a Wallet Unit MUST NOT apply its own conversion.
 
 The Wallet Unit MUST treat the request as unsatisfiable if:
 
