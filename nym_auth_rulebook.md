@@ -624,9 +624,15 @@ For `mso_mdoc`, the circuit MUST verify the device signature over the `DeviceAut
 | Digital Credentials API | `OpenID4VPDCAPIHandover` = `["OpenID4VPDCAPIHandover", SHA-256(cbor([origin, nonce, jwkThumbprint]))]` | Appendix B.2.6.2 |
 | Redirects, including a request fetched from a `request_uri` that a QR code or a link carries | `OpenID4VPHandover` = `["OpenID4VPHandover", SHA-256(cbor([client_id, nonce, jwkThumbprint, response_uri]))]` | Appendix B.2.6.1 |
 
-In both, `cbor(...)` is the CBOR encoding of the `OpenID4VPHandoverInfo` (respectively `OpenID4VPDCAPIHandoverInfo`) array, hashed as it is and not wrapped in a byte string; `nonce` is the `nonce` request parameter as a text string; and `jwkThumbprint` is the JWK SHA-256 Thumbprint (RFC 7638) of the Verifier's public key that encrypts the response, as a 32-byte byte string. Over the Digital Credentials API it is CBOR `null` when the response is not encrypted, as Appendix B.2.6.2 defines. Over redirects it is never `null`, because the response is always encrypted (see "Over redirects", rule 2). `origin` is the origin of the calling web page. `client_id` is the `client_id` request parameter including its Client Identifier Prefix, and `response_uri` is the `response_uri` request parameter (or the `redirect_uri` parameter, when the Response Mode uses it). The values MUST be taken from the signed Request Object, never from the Authorization Request query parameters or from anything the response carries.
+The hash input is the CBOR encoding of the array itself. The values are:
 
-A Wallet Unit MUST build the `Handover` of the channel the request arrived on and MUST NOT build the other one. A Verifier MUST verify a presentation against the `Handover` of the channel on which it issued the request, and MUST reject one made over the other.
+* `origin`: the origin of the calling web page.
+* `client_id`: the Client Identifier, including its Client Identifier Prefix.
+* `nonce`: the `nonce` request parameter, as a text string.
+* `response_uri`: the `response_uri` request parameter (or the `redirect_uri` parameter, when the Response Mode uses it).
+* `jwkThumbprint`: the JWK SHA-256 Thumbprint (RFC 7638) of the Verifier's response-encryption key, as a 32-byte byte string. The response is always encrypted.
+
+The Wallet Unit MUST take `client_id`, `nonce`, `response_uri` and the response-encryption key from the validated Request Object, and MUST use the `Handover` of the channel on which it received the request. The Verifier MUST compute the `Handover` itself, from the Request Object it sent and, over the Digital Credentials API, the origin of its web page. It MUST NOT take any `Handover` value from the presentation.
 
 For `bbs_cd`, the scheme's request binds the session. Its audience is SHA-256 of the `OpenID4VPHandoverInfo` bytes (OpenID4VP 1.0 Appendix B.2.6.1), or of the `OpenID4VPDCAPIHandoverInfo` bytes over the Digital Credentials API (Appendix B.2.6.2). Its nonce is the request's `nonce`. The `ecdsa-pop/0.1` plugin proves that the committed `device_key` signed a message bound to that request.
 
