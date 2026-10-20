@@ -211,7 +211,7 @@ encoding):
 
 ```cbor-diag
 {
-  "circuit_id": "urn:circuits:longfellow:nym_auth:v1",
+  "system_id": "urn:circuits:longfellow:nym_auth:v1",
   "proof": h'...',
   "issuer_key_set": [h'3082...'],
   "results": {
@@ -291,7 +291,7 @@ Alternative 1 (demo runs this).
           },
           {
             "fn_id": "age_check",
-            "id": "age-range-123",
+            "return": "age-range-123",
             "params": {
               "ge": "2008-10-10",
               "le": "2013-10-09"
