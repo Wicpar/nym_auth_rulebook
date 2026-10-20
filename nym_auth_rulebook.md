@@ -643,8 +643,13 @@ Over DC API the following applies to bind the pseudonym to the Verifier:
 1. Requests for `nym_auth` attestation sent over the Digital Credentials API MUST use the `openid4vp-v1-signed` protocol. An unsigned request MUST be rejected.
 2. The Wallet Unit MUST validate the Request Object signature and certificate chain according to the Client Identifier Prefix and, over the Digital Credentials API, MUST verify that the calling origin is contained in `expected_origins`.
 
-Over redirects (including a request fetched from a `request_uri`), the following applies:
+ver redirects, including a request fetched from a `request_uri`, the following applies:
 
-1. Requests for `nym_auth` attestation MUST be a signed Request Object. An unsigned request MUST be rejected. A Client Identifier Prefix that cannot sign a request (`redirect_uri`) is therefore not usable. The Wallet Unit MUST validate the Request Object signature and certificate chain according to the Client Identifier Prefix.
-2. The response MUST be encrypted: the Response Mode MUST be `direct_post.jwt`, and the Request Object MUST carry the Verifier's response-encryption key in `client_metadata`. A Wallet Unit MUST treat a request for `nym_auth` attestation with another Response Mode as unsatisfiable, and a Verifier MUST reject a presentation whose `OpenID4VPHandover` has a `null` `jwkThumbprint`.
-3. The Wallet Unit MUST send the Authorization Response only to the `response_uri` (or `redirect_uri`) of the validated Request Object, the same value it puts in the `OpenID4VPHandover`.
+1. Requests for `nym_auth` attestation MUST be signed Request Objects. An unsigned request MUST be rejected, so the `redirect_uri` Client Identifier Prefix is not usable. The Wallet Unit MUST validate the Request Object signature and certificate chain according to the Client Identifier Prefix.
+2. The Wallet Unit MUST send the Authorization Response only to the `response_uri` of the validated Request Object, the value it uses in the `Handover`.
+
+## Response confidentiality
+
+A `zkp_req` presentation MUST be encrypted to the Verifier. The Response Mode MUST be `direct_post.jwt` over redirects and `dc_api.jwt` over the Digital Credentials API, and the Request Object MUST carry the Verifier's response-encryption key in `client_metadata`. A Wallet Unit MUST treat a request with another Response Mode, or without a response-encryption key, as unsatisfiable.
+
+> **NOTE:** The Readdit demo does not encrypt the response, for simplicity. It uses `direct_post`, and its `Handover` has a `null` `jwkThumbprint`.
