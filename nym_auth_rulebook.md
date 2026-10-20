@@ -446,9 +446,9 @@ An issuer MUST accept at most one `psc` per identity subject, where the subject 
 
 > **NOTE 1**: Since the `private_seed` is per issuer, a ban does not follow a person to a different issuer. If the issuer changes, a new `psc` is issued, which changes the pseudonym generated.
 
-> **NOTE 3** (non-normative): How the `psc` is conveyed to the issuer at issuance (a claim in the proof JWT covered by the proof of possession, advertised by the issuer) is specified elsewhere; this is not yet specified.
-
 > **NOTE 2**: If the `verifier_input` changes, so does the pseudonym generated. Known offender matching is not possible if the Verifier identity changes.
+
+> **NOTE 3** (non-normative): How the `psc` is conveyed to the issuer at issuance (a claim in the proof JWT covered by the proof of possession, advertised by the issuer) is specified elsewhere; this is not yet specified.
 
 #### `account-recovery-ssc`
 
