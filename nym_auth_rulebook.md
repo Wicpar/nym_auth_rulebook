@@ -132,7 +132,9 @@ For attestations in the BBS committed-disclosure encoding, the schema identifier
 | :--- | :--- | :--- | :--- |
 | `device_key` | `p256-point-xy.ecdsa-sha256`, 96-bit limbs | 6 | The public key of a device key pair whose private key is protected by [hardware / WSCD reference], attested for hashed ECDSA at issuance |
 | `birth_date` | `date-packed` | 1 | (Y − 1900)·372 + (M − 1)·31 + (D − 1), which preserves date order |
-| `secret_seed` | `nym-seed.issuer-known` | 1 | The pseudonym seed: a 255-bit value chosen and kept by the issuer |
+| `secret_seed` | `nym-seed.issuer-known` | 1 | The pseudonym seed: an issuer-managed scalar drawn uniformly at random from the non-zero elements of the BLS12-381 scalar field |
+
+> **NOTE:** An issuer that also issues the `mso_mdoc` encoding may derive the scalar from the holder's 16-byte `secret_seed` as `hash_to_scalar(secret_seed, "nym_auth/v1/bbs-seed")` with the BLS12-381-SHA-256 ciphersuite's `hash_to_scalar`.
 
 The schema digest is `ab4183a9ed0b57d6bfb8994c92b432bb9731a3e2fd974ac2f67422e2f7dfb7e1`.
 
