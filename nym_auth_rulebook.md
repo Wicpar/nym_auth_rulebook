@@ -67,8 +67,6 @@ A Wallet Unit MUST NOT disclose the value of `ssc` or `psc` to a Verifier in any
 
 > **NOTE:** Using `ssc` or `psc` as the `source` of a `circuit_zk` function does not disclose its value, because issuer-signed attributes are never disclosed directly in a `circuit_zk` presentation.
 
-Disclosure of `birth_date` is not restricted by this section.
-
 ## Mobile Security Object requirements
 
 For ISO/IEC 18013-5 encoded attestations:
