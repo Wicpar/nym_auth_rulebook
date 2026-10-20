@@ -229,6 +229,8 @@ The example shows the decoded payload of a signed Request Object (`openid4vp-v1-
 
 EXAMPLE BELOW IS WORK IN PROGRESS AND BEING REVISED.
 
+Alternative 1 (demo runs this).
+
 ```json
 {
   "response_type": "vp_token",
@@ -253,15 +255,88 @@ EXAMPLE BELOW IS WORK IN PROGRESS AND BEING REVISED.
       ]
     },
     "vp_formats_supported": {
-      "circuit_zk": {
-        "fn_id": "circuit_zk_longfellow",
-        "input": base64of: {
-          "circuit_proof_system_values": [
+      "zkp_req": {
+        "proof_system_values": [
+          "longfellow-libzk-v1",
+          "vega-v1",
+          "bbs-cd-plugins-v0.1"
+        ],
+        "system_id_values": [
+          "urn:circuits:longfellow:nym_auth:v1",
+          "urn:circuits:vega:nym_auth:v1",
+          "urn:mms:bbs-cd:nym_auth:v1"
+        ]
+      }
+    }
+  },
+  "dcql_query": {
+    "credentials": [
+      {
+        "id": "nym_attestation",
+        "format": "zkp_req",
+        "meta": {
+          "source_format": "mdoc_mso",
+          "doctype_value": "eu.europa.ec.eudi.nym_auth.1"
+        },
+        "_req": [
+          {
+            "fn_id": "pseudonym",
+            "return": "nym",
+            "params": {
+              "config": "known-offender-matching-ssc",
+              "verifier_id_type": "x509_san_dns",
+              "ver": 1,
+              "prf": "sha-256"
+            }
+          },
+          {
+            "fn_id": "age_check",
+            "id": "age-range-123",
+            "params": {
+              "ge": "2008-10-10",
+              "le": "2013-10-09"
+            }
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+Alternative 2. 
+
+```json
+{
+  "response_type": "vp_token",
+  "response_mode": "dc_api.jwt",
+  "nonce": "n-0S6_WzA2Mj",
+  "client_id": "x509_san_dns:rp.example.com",
+  "expected_origins": [
+    "https://rp.example.com"
+  ],
+  "client_metadata": {
+    "jwks": {
+      "keys": [
+        {
+          "kty": "EC",
+          "crv": "P-256",
+          "x": "TCAER19Zvu3OHF4j4W4vfSVoHIP1ILilDls7vCeGemc",
+          "y": "ZxjiWWbZMQGHVWKVQ4hbSIirsVfuecCE6t4jT9F2HZQ",
+          "use": "enc",
+          "alg": "ECDH-ES",
+          "kid": "1"
+        }
+      ]
+    },
+    "vp_formats_supported": {
+      "zkp_req": {
+        "proof_system_values": [
             "longfellow-libzk-v1"
-          ],
-          "circuit_id_values": [
+        ],
+        "circuit_id_values": [
             "urn:circuits:longfellow:nym_auth:v1"
-          ]
+        ]
         }
       }
     }
@@ -270,7 +345,7 @@ EXAMPLE BELOW IS WORK IN PROGRESS AND BEING REVISED.
     "credentials": [
       {
         "id": "nym_attestation",
-        "format": "circuit_zk",
+        "format": "zkp_req",
         "meta": {
           "source_format": "mdoc_mso",
           "doctype_value": "eu.europa.ec.eudi.nym_auth.1"
@@ -312,6 +387,7 @@ EXAMPLE BELOW IS WORK IN PROGRESS AND BEING REVISED.
   }
 }
 ```
+
 > NOTE: Check where the function outputs defined.
 
 > NOTE: `format` is the expected format of the attestation that wraps the response, and NOT the source format of the attestation, or the vp_formats_supported etc.
