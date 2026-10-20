@@ -63,7 +63,7 @@ In tables, REQ is short for REQUIRED, OPT is short for OPTIONAL, CON is short fo
 
 `ssc` and `psc` are stable values that can act as a correlation handle for the Holder.
 
-A Wallet Unit MUST NOT disclose the value of `ssc` or `psc` to a Verifier in any presentation, whatever the presentation format or protocol, including a presentation of this attestation as `mso_mdoc`. A Credential Query that requests `ssc` or `psc` through a format other than `circuit_zk` MUST be treated as unsatisfiable for this attestation, with the error handling defined in "Unsatisfiable Credential Queries". A Wallet Unit MUST NOT display the values of `ssc` or `psc` to the Holder.
+A Wallet Unit MUST NOT disclose `ssc` or `psc` or `birth_date` in a presentation; a Credential Query that requests any of these values MUST be treated as unsatisfiable.
 
 ## Mobile Security Object requirements
 
