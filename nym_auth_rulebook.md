@@ -160,7 +160,12 @@ the `mso_mdoc` form MUST announce these entries in its credential configuration:
 
 An issuer MUST accept at most one `psc` per identity subject. It identifies the subject as it does
 for `secret_seed`. It MUST record the first `psc` it accepts for a subject. It MUST refuse issuance
-with a different `psc`, unless the subject's record was reset:
+with a different `psc`, unless the subject's record was reset. The refusal uses the error code
+`auxiliary_data_conflict`
+([Credential Auxiliary Data](openid-4-verifiable-credential-issuance-auxiliary-data.md),
+Section 6.4).
+
+The reset rules:
 
 * A reset MUST follow an operator-approved re-identification of the subject, MUST be logged and
   SHOULD be rate-limited.

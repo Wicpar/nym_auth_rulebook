@@ -198,9 +198,18 @@ The Credential Issuer:
 2. rejects the request if its key proofs carry different `credential_auxiliary_data` values;
 3. rejects the request if a `required` entry is missing;
 4. checks each entry as its Auxiliary Data Type defines, and rejects the request if a check fails;
-5. applies each entry to every Credential of the request.
+5. rejects the request if an entry conflicts with a value it holds for the subject, such as a
+   commitment recorded at an earlier issuance;
+6. applies each entry to every Credential of the request.
 
-A rejection uses the error code `invalid_proof` (Section 8.3.1.2 of [OpenID4VCI]).
+A rejection in step 5 uses the following error code, in addition to those of Section 8.3.1.2 of
+[OpenID4VCI]:
+
+* `auxiliary_data_conflict`: an Auxiliary Data Entry conflicts with a value the Credential Issuer
+  holds for the subject. Retrying does not resolve it. The Credential Issuer resolves it out of
+  band.
+
+Every other rejection uses the error code `invalid_proof`.
 
 # 7. Auxiliary Data in Credential Responses
 
