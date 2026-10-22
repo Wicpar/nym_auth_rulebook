@@ -57,21 +57,52 @@ The Auxiliary Data Type defines all other parameters.
 `credential_auxiliary_data` is a non-empty array of Auxiliary Data Entries. It contains at most one
 entry per `type` and `claim_path`. A recipient MUST ignore entries of an unrecognized `type`.
 
+# 4. Auxiliary Data Types
+
 An Auxiliary Data Type definition specifies:
 
-* the parameters of entries sent by the Wallet and by the Credential Issuer;
+* the parameters of its entries in metadata, from the Wallet and from the Credential Issuer;
 * which parameters are Secret Values;
 * the checks the recipient performs;
 * whether entries sent by the Wallet may travel in a Key Attestation.
 
-# 4. Credential Issuer Metadata
+## 4.1 `hash_commitment`
+
+A hash commitment to a secret byte string. The Credential contains the commitment as a claim. The
+secret is its opening. The Credential Configuration defines how long the secret is and how it is
+generated. The secret MUST have at least 128 bits of entropy.
+
+Parameters:
+
+* `alg`: REQUIRED. The hash function. This specification defines `sha-256`.
+* `claim_path`: REQUIRED. Claims path pointer (Appendix C of [OpenID4VCI]) to the one claim that
+  holds the commitment.
+* `opening`: REQUIRED when the Credential Issuer sends the entry with a Credential. MUST be absent
+  otherwise. The base64url-encoded secret. It is a Secret Value.
+* `commitment`: REQUIRED when the Wallet sends the entry in a key proof. MUST be absent otherwise.
+  The base64url-encoded commitment.
+
+The commitment is the `alg` hash of the opening.
+
+Checks:
+
+* **From the Credential Issuer.** The Wallet MUST check that the hash of the `opening` equals the
+  claim at `claim_path`. In JSON-based Credentials that claim is base64url-encoded.
+* **From the Wallet.** The Credential Issuer MUST check that `commitment` has the output length of
+  `alg`. It writes `commitment` to the claim at `claim_path`. After issuance, the Wallet MUST check
+  that this claim holds its commitment.
+
+Entries sent by the Wallet MAY travel in a Key Attestation. The commitment reveals no more about
+the Holder than the attested keys.
+
+# 5. Credential Issuer Metadata
 
 This specification defines the following parameter for the objects of
 `credential_configurations_supported` (Section 12.2.4 of [OpenID4VCI]):
 
 * `credential_auxiliary_data`: OPTIONAL. Object describing the Auxiliary Data Entries used to issue
-  this Credential Configuration. Each entry is described by an Auxiliary Data Entry without its
-  value parameters.
+  this Credential Configuration. It contains at least one of `to_wallet` and `to_issuer`. Each entry
+  carries the parameters its Auxiliary Data Type defines for metadata.
   * `to_wallet`: OPTIONAL. Non-empty array of the entries the Credential Issuer sends with each
     Credential.
   * `to_issuer`: OPTIONAL. Non-empty array of the entries the Credential Issuer accepts in key
@@ -97,13 +128,13 @@ Below is a non-normative example of a Credential Configuration with this paramet
 }
 ```
 
-# 5. Auxiliary Data in Key Proofs
+# 6. Auxiliary Data in Key Proofs
 
-The Wallet places `credential_auxiliary_data` in the signed part of each key proof (Appendix F of
-[OpenID4VCI]). In the examples, the commitment is SHA-256 of the 16-byte secret
+When the Wallet sends entries, it places `credential_auxiliary_data` in the signed part of each key
+proof (Appendix F of [OpenID4VCI]). In the examples, the commitment is SHA-256 of the 16-byte secret
 `8f3b2c9e41d07a65b1e2f4c3d9a08176` (hex).
 
-## 5.1 `jwt` Proof Type
+## 6.1 `jwt` Proof Type
 
 `credential_auxiliary_data` is a claim in the JWT body. It stays there when the JOSE header carries
 a `key_attestation`.
@@ -137,7 +168,7 @@ Below is a non-normative example of a decoded key proof JWT:
 }
 ```
 
-## 5.2 `di_vp` Proof Type
+## 6.2 `di_vp` Proof Type
 
 `credential_auxiliary_data` is a property of the Verifiable Presentation. The `@context` MUST
 include a context [JSON-LD] that defines the term as a JSON literal. Canonicalization then keeps
@@ -153,13 +184,13 @@ the value intact.
 
 > TODO: define the term IRI and the URL where this context is published.
 
-## 5.3 `attestation` Proof Type
+## 6.3 `attestation` Proof Type
 
 `credential_auxiliary_data` is a claim in the Key Attestation body (Appendix D.1 of
 [OpenID4VCI]). The Wallet passes it and the `c_nonce` to the Key Attestation signer. The signer
 includes both in a fresh Key Attestation. Only Auxiliary Data Types that allow it travel this way.
 
-## 5.4 Processing by the Credential Issuer
+## 6.4 Processing by the Credential Issuer
 
 The Credential Issuer:
 
@@ -171,14 +202,15 @@ The Credential Issuer:
 
 A rejection uses the error code `invalid_proof` (Section 8.3.1.2 of [OpenID4VCI]).
 
-# 6. Auxiliary Data in Credential Responses
+# 7. Auxiliary Data in Credential Responses
 
 This specification defines the following parameter for the objects of the `credentials` array, in
 the Credential Response and the Deferred Credential Response (Sections 8.3 and 9.2 of
 [OpenID4VCI]):
 
-* `credential_auxiliary_data`: OPTIONAL. Non-empty array of Auxiliary Data Entries for the
-  Credential in the same object.
+* `credential_auxiliary_data`: REQUIRED when `to_wallet` of the Credential Configuration lists
+  entries. MUST be absent otherwise. Non-empty array of Auxiliary Data Entries for the Credential in
+  the same object.
 
 Below is a non-normative example of the payload of an encrypted Credential Response:
 
@@ -201,7 +233,7 @@ Below is a non-normative example of the payload of an encrypted Credential Respo
 }
 ```
 
-## 6.1 Encryption
+## 7.1 Encryption
 
 Secret Values travel only in encrypted responses (Section 10 of [OpenID4VCI]).
 
@@ -211,45 +243,15 @@ Secret Values travel only in encrypted responses (Section 10 of [OpenID4VCI]).
 * When the Wallet requested no encryption, the Credential Issuer MUST NOT send Secret Values. It
   returns the error code `invalid_encryption_parameters`.
 
-## 6.2 Processing by the Wallet
+## 7.2 Processing by the Wallet
 
 Before storing a Credential, the Wallet MUST check the entries it received and the entries it sent,
-as their Auxiliary Data Types define. The issuance fails when a check fails or when a Secret Value
-arrives unencrypted. The Wallet then stores nothing from the response.
+as their Auxiliary Data Types define. The issuance fails when a check fails, when an entry that
+`to_wallet` lists is missing, or when a Secret Value arrives unencrypted. The Wallet then stores
+nothing from the response.
 
 The Wallet stores each entry with its Credential and deletes it with the Credential. It protects
 Secret Values like private keys. It MUST NOT display, log or export them in clear.
-
-# 7. Auxiliary Data Types
-
-## 7.1 `hash_commitment`
-
-A hash commitment to a secret byte string. The Credential contains the commitment as a claim. The
-secret is its opening. The Credential Configuration defines how long the secret is and how it is
-generated. The secret MUST have at least 128 bits of entropy.
-
-Parameters:
-
-* `alg`: REQUIRED. The hash function. This specification defines `sha-256`.
-* `claim_path`: REQUIRED. Claims path pointer (Appendix C of [OpenID4VCI]) to the one claim that
-  holds the commitment.
-* `opening`: REQUIRED from the Credential Issuer, absent from the Wallet. The base64url-encoded
-  secret. It is a Secret Value.
-* `commitment`: REQUIRED from the Wallet, absent from the Credential Issuer. The base64url-encoded
-  commitment.
-
-The commitment is the `alg` hash of the opening.
-
-Checks:
-
-* **From the Credential Issuer.** The Wallet MUST check that the hash of the `opening` equals the
-  claim at `claim_path`. In JSON-based Credentials that claim is base64url-encoded.
-* **From the Wallet.** The Credential Issuer MUST check that `commitment` has the output length of
-  `alg`. It writes `commitment` to the claim at `claim_path`. After issuance, the Wallet MUST check
-  that this claim holds its commitment.
-
-Entries sent by the Wallet MAY travel in a Key Attestation. The commitment reveals no more about
-the Holder than the attested keys.
 
 # 8. Security Considerations
 
@@ -297,7 +299,7 @@ This specification registers the following claim in the IANA "JSON Web Token Cla
 * Claim Description: Credential Auxiliary Data
 * Change Controller: OpenID Foundation Digital Credentials Protocols Working Group -
   openid-specs-digital-credentials-protocols@lists.openid.net
-* Specification Document(s): Section 5 of this specification
+* Specification Document(s): Section 6 of this specification
 
 # 11. References
 
