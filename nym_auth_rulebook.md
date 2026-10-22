@@ -142,11 +142,11 @@ The seeds travel as `hash_commitment` entries of
 the `mso_mdoc` form MUST announce these entries in its credential configuration:
 
 ```json
-"credential_auxiliary_data": {
+"auxiliary_data_supported": {
   "to_wallet": [ { "type": "hash_commitment", "alg": "sha-256",
-                   "claim_path": ["eu.europa.ec.eudi.nym_auth.1", "ssc"] } ],
+                   "path": ["eu.europa.ec.eudi.nym_auth.1", "ssc"] } ],
   "to_issuer": [ { "type": "hash_commitment", "alg": "sha-256",
-                   "claim_path": ["eu.europa.ec.eudi.nym_auth.1", "psc"] } ]
+                   "path": ["eu.europa.ec.eudi.nym_auth.1", "psc"] } ]
 }
 ```
 
