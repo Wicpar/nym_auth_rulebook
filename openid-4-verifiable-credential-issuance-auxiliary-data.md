@@ -69,8 +69,9 @@ An Auxiliary Data Type definition specifies:
 ## 4.1 `hash_commitment`
 
 A hash commitment to a secret byte string. The Credential contains the commitment as a claim. The
-secret is its opening. The Credential Configuration defines how long the secret is and how it is
-generated. The secret MUST have at least 128 bits of entropy.
+secret is its opening. The Credential Configuration defines how long the secret is, how it is
+generated and how the claim represents the commitment. The secret MUST have at least 128 bits of
+entropy.
 
 Parameters:
 
@@ -87,7 +88,7 @@ The commitment is the `alg` hash of the opening.
 Checks:
 
 * **From the Credential Issuer.** The Wallet MUST check that the hash of the `opening` equals the
-  claim at `path`. In JSON-based Credentials that claim is base64url-encoded.
+  commitment the claim at `path` represents.
 * **From the Wallet.** The Credential Issuer MUST check that `commitment` has the output length of
   `alg`. It writes `commitment` to the claim at `path`. After issuance, the Wallet MUST check
   that this claim holds its commitment.
