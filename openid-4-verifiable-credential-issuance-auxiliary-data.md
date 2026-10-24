@@ -107,7 +107,7 @@ This specification defines the following parameter for the objects of
     response that carries Credentials (Section 7).
   * `to_issuer`: OPTIONAL. Non-empty array of the entries the Credential Issuer accepts in key
     proofs. An entry MAY contain `required` (Boolean, default `false`). When `required` is `true`,
-    the Wallet MUST send the entry.
+    the Wallet MUST send the entry, and MUST recognize its type before it requests the Credential.
 
 Below is a non-normative example of a Credential Configuration with this parameter:
 
@@ -276,10 +276,12 @@ Token cannot replace them.
 
 ## 8.2 Integrity of the Response Encryption Key
 
-[OpenID4VCI] protects the response encryption key only by encrypting the Credential Request
-(Section 9.2 of [OpenID4VCI]). A Wallet component that rewrites the Credential Request can replace
-that key and read Secret Values (Section 14.4 of [OpenID4VCI]). A Wallet made of several
-components SHOULD encrypt the Credential Request in the component that stores Secret Values.
+The party that holds the Access Token chooses the response encryption key: it can send a
+Credential Request of its own, with the key proofs it obtains and a response encryption key it
+controls. Encrypting the Credential Request (Section 9.2 of [OpenID4VCI]) protects the key from
+other parties. A Wallet whose backend holds the Access Token trusts that backend with Secret Values.
+Decrypting the Credential Response in the component that stores Secret Values keeps them out of
+the storage and logs of the other components.
 
 ## 8.3 Deferred Credential Issuance
 
