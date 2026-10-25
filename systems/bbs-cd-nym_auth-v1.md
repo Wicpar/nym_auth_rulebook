@@ -37,7 +37,7 @@ RFC 2119.
 | `_req` item | Supported parameters |
 | :-- | :-- |
 | `pseudonym` | `config` `known-offender-matching-ssc`, `prf` `hashdh-bls12381g1`, `ver` 1. |
-| `age_check` | `range`. |
+| `age_check` | `range`, with E and C from 1900-01-01 to 9999-12-31. |
 
 Every `verifier_id` form of nym_auth works.
 
@@ -45,7 +45,6 @@ This system answers `unsupported` for an option ([zkp_req](../zkp_req.md), Secti
 
 * the option has no `pseudonym` item;
 * the Request Object's `nonce` is outside 16 to 64 bytes (ENVELOPE §4);
-* E or C (nym_auth, `age_check`) has a year below 1900;
 * lo ≥ hi (Section 4).
 
 The date-range prover MUST accept the [lo, hi] of every supported `range`. The narrowest spans 369

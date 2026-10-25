@@ -31,7 +31,7 @@ RFC 2119.
 | `_req` item | Supported parameters |
 | :-- | :-- |
 | `pseudonym` | `config` `known-offender-matching-ssc`, `prf` `sha-256`, `ver` 1. |
-| `age_check` | `range`. |
+| `age_check` | `range`, with E and C from 0000-01-01 to 9999-12-31. |
 
 Every `verifier_id` form of nym_auth works.
 

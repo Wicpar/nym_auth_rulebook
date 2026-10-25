@@ -435,7 +435,7 @@ Proves that the Holder's age in whole years lies in a range.
 range = age "-" age   ; A-B: age A to B
       / age "+"       ; A+: age A or more
       / age "-"       ; B-: age B or less
-age   = "0" / %x31-39 [DIGIT] / "1" %x30-34 DIGIT / "150"   ; 0 to 150, no leading zero
+age   = 1*DIGIT       ; base-10 integer
 ```
 
 A `range` that breaks this syntax, or `A-B` with A > B, makes the query invalid.
@@ -449,6 +449,8 @@ from `range` and D. D is the UTC date of the proof time: the time at which the s
 * C is the latest calendar date on or before D minus A years.
 * E is the earliest calendar date after D minus (B + 1) years.
 * `A+` has no E, and `B-` has no C. A system takes its widest value for a missing bound.
+* A system supports a `range` only when E and C lie within the dates its rulebook gives. For
+  another `range`, the system answers `unsupported` for the option (`zkp_req`, Section 1.3).
 * For `bbs_cd` the comparison runs on `date-packed`, which keeps date order.
 
 ---
