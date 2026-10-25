@@ -69,21 +69,35 @@ An Auxiliary Data Type definition specifies:
 ## 4.1 `hash_commitment`
 
 A hash commitment to a secret byte string. The Credential contains the commitment as a claim. The
-secret is its opening. The Credential Configuration defines how long the secret is, how it is
-generated and how the claim represents the commitment. The secret MUST have at least 128 bits of
-entropy.
+secret is its opening. The Credential Configuration defines how long the secret is and how it is
+generated. The secret MUST have at least 128 bits of entropy.
 
 Parameters:
 
 * `alg`: REQUIRED. The hash function. This specification defines `sha-256`.
 * `path`: REQUIRED. Claims path pointer (Appendix C of [OpenID4VCI]) that selects exactly one
   claim: the claim that holds the commitment.
+* `encoding`: OPTIONAL in metadata. MUST be absent otherwise. How the claim at `path` represents
+  the commitment. This specification defines these values, where the claim is a string holding
+  the commitment:
+  * `base64url`: base64url-encoded;
+  * `base64`: base64-encoded with padding (Section 4 of [RFC4648]);
+  * `hex`: lowercase hexadecimal.
+
+  When `encoding` is absent, the claim holds the commitment's bytes, such as an mdoc `bstr` data
+  element. Other specifications MAY define further values.
 * `opening`: REQUIRED when the Credential Issuer sends the entry in a response. MUST be absent
   otherwise. The base64url-encoded secret. It is a Secret Value.
 * `commitment`: REQUIRED when the Wallet sends the entry in a key proof. MUST be absent otherwise.
   The base64url-encoded commitment.
 
 The commitment is the `alg` hash of the opening.
+
+A Wallet that does not recognize the `encoding` of an entry:
+
+* MUST NOT request the Credential when the entry is in `to_wallet`, or in `to_issuer` with
+  `required` `true`;
+* MUST NOT send the entry otherwise.
 
 Checks:
 
@@ -328,6 +342,7 @@ This specification registers the following claim in the IANA "JSON Web Token Cla
   Issuance 1.1", Editor's draft openid-4-verifiable-credential-issuance-1_1-01.
 * [RFC2119] S. Bradner, "Key words for use in RFCs to Indicate Requirement Levels", BCP 14,
   RFC 2119.
+* [RFC4648] S. Josefsson, "The Base16, Base32, and Base64 Data Encodings", RFC 4648.
 * [RFC7515] M. Jones, J. Bradley, N. Sakimura, "JSON Web Signature (JWS)", RFC 7515.
 * [RFC7519] M. Jones, J. Bradley, N. Sakimura, "JSON Web Token (JWT)", RFC 7519.
 * [RFC8174] B. Leiba, "Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words", BCP 14,
