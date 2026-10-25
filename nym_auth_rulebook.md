@@ -417,7 +417,7 @@ under DDH in G1, with $H$ modeled as a random oracle into G1.
 
 ## `age_check`
 
-Compares `birth_date` with dates, to prove an age threshold or range.
+Proves that the Holder's age in whole years lies in a range.
 
 * `fn_id`: `"age_check"`.
 * Attribute: `birth_date`.
@@ -427,18 +427,28 @@ Compares `birth_date` with dates, to prove an age threshold or range.
 
 | Parameter | Type | Presence | Content |
 | :-- | :-- | :-- | :-- |
-| `ge` | String | OPT | Born on or after: $`\text{birth\_date} \ge \text{date}`$. |
-| `le` | String | OPT | Born on or before: $`\text{birth\_date} \le \text{date}`$. |
+| `range` | String | REQ | The allowed ages in whole years, bounds included. |
 
-* At least one parameter MUST be present. Dates are RFC 3339 `full-date` strings. For a strict
-  bound, shift the date by one day.
-* With both, the query is invalid when `le < ge` or when `le − ge + 1` is under 365 days. A narrower
-  range would come too close to revealing the birth date.
-* Options can reveal more together than each range alone, because answering an option shows that
-  the earlier ones failed. The dates an option reveals are those its `age_check` allows (every date
-  without one), minus those an earlier option's `age_check` allows. When these dates include an
-  interval under 365 days, the Wallet Unit MUST warn the User and MAY refuse the query
-  (`invalid_request`).
+`range` has this syntax (RFC 5234):
+
+```abnf
+range = age "-" age   ; A-B: age A to B
+      / age "+"       ; A+: age A or more
+      / age "-"       ; B-: age B or less
+age   = "0" / %x31-39 [DIGIT] / "1" %x30-34 DIGIT / "150"   ; 0 to 150, no leading zero
+```
+
+A `range` that breaks this syntax, or `A-B` with A > B, makes the query invalid.
+
+The proof shows $`E \le \text{birth\_date} \le C`$. The Wallet Unit and the Verifier compute E and C
+from `range` and D. D is the UTC date of the proof time: the time at which the system tests validity
+(What every proof establishes). The system rulebook says where the proof carries D.
+
+* D minus N years keeps the month and day of D and subtracts N from its year. The result may be no
+  calendar date, such as (2015, 02, 29). It compares with calendar dates in date order.
+* C is the latest calendar date on or before D minus A years.
+* E is the earliest calendar date after D minus (B + 1) years.
+* `A+` has no E, and `B-` has no C. A system takes its widest value for a missing bound.
 * For `bbs_cd` the comparison runs on `date-packed`, which keeps date order.
 
 ---
@@ -475,7 +485,7 @@ A signed Request Object over the Digital Credentials API, offering both forms as
         "_req": [
           { "fn_id": "pseudonym", "return": "nym",
             "params": { "config": "known-offender-matching-ssc", "ver": 1, "prf": "sha-256" } },
-          { "fn_id": "age_check", "params": { "ge": "2008-10-10", "le": "2013-10-09" } }
+          { "fn_id": "age_check", "params": { "range": "13-17" } }
         ]
       },
       {
@@ -485,7 +495,7 @@ A signed Request Object over the Digital Credentials API, offering both forms as
         "_req": [
           { "fn_id": "pseudonym", "return": "nym",
             "params": { "config": "known-offender-matching-ssc", "ver": 1, "prf": "hashdh-bls12381g1" } },
-          { "fn_id": "age_check", "params": { "ge": "2008-10-10", "le": "2013-10-09" } }
+          { "fn_id": "age_check", "params": { "range": "13-17" } }
         ]
       }
     ],
@@ -507,3 +517,5 @@ The presentation for `nym_attestation`, before encoding (`zkp_req`, Section 4):
   "results": { "nym": h'5f2a…e1' }
 }
 ```
+
+Its `proof_time` falls on 2026-10-09. `13-17` then gives E = 2008-10-10 and C = 2013-10-09.

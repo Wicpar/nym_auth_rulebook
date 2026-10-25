@@ -31,7 +31,7 @@ RFC 2119.
 | `_req` item | Supported parameters |
 | :-- | :-- |
 | `pseudonym` | `config` `known-offender-matching-ssc`, `prf` `sha-256`, `ver` 1. |
-| `age_check` | `ge`, `le` or both. |
+| `age_check` | `range`. |
 
 Every `verifier_id` form of nym_auth works.
 
@@ -80,8 +80,8 @@ The core circuit has 18 public values, in this order. Each is an element of the 
 | # | Value | Encoding | Source |
 | --: | :-- | :-- | :-- |
 | 0, 1 | issuer key Q: x, y | BE(32 bytes) each | `inputs.issuer_key_set[0]` (Section 6) |
-| 2 | E, earliest birth date | integer YYYYMMDD of `ge`; 0 when `ge` is absent | request |
-| 3 | C, latest birth date | integer YYYYMMDD of `le`; 99991231 when `le` is absent | request |
+| 2 | E, earliest birth date | integer YYYYMMDD; 0 without E | `range` at the date of `inputs.proof_time` (nym_auth, `age_check`) |
+| 3 | C, latest birth date | integer YYYYMMDD; 99991231 without C | `range` at the date of `inputs.proof_time` (nym_auth, `age_check`) |
 | 4 | T | integer YYYYMMDDhhmmss of `proof_time` | `inputs.proof_time` |
 | 5, 6 | e2, bytes 0..15 and 16..31 | BE(16 bytes) each | session (Section 5) |
 | 7 | docType window, bytes 0..30 | `0x67646f6354797065781c65752e6575726f70612e65` | system |
