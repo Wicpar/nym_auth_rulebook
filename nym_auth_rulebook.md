@@ -97,21 +97,23 @@ holding an RFC 3339 `full-date`.
 
 ## Layout
 
-An attestation MUST be the bytes below, with each value filled in for the credential. Every other
-byte is the same in every attestation. Hex bytes are in capitals, `'text'` is the ASCII bytes of
+An attestation MUST be one of the two byte layouts below, with each value filled in for the
+credential. Every other byte is fixed. Hex bytes are in capitals, `'text'` is the ASCII bytes of
 text, a name is a value of the table below, `‖` joins bytes, and `;` starts a comment.
 
+Without `psc`:
+
 ```
-; IssuerSigned
+; IssuerSigned without psc
 A2
   6A 'nameSpaces' A1
     78 1C 'eu.europa.ec.eudi.nym_auth.1' 82
-      D8 18 58 5B                                         ; the birth_date item, 91 bytes
+      D8 18 58 5B                                         ; item 0, birth_date: 91 bytes
         A4 68 'digestID' 00
            66 'random' 50 ‖ random_0
            71 'elementIdentifier' 6A 'birth_date'
            6C 'elementValue' D9 03 EC 6A ‖ birth_date
-      D8 18 58 68                                         ; the ssc item, 104 bytes
+      D8 18 58 68                                         ; item 1, ssc: 104 bytes
         A4 68 'digestID' 01
            66 'random' 50 ‖ random_1
            71 'elementIdentifier' 63 'ssc'
@@ -119,17 +121,51 @@ A2
   6A 'issuerAuth' 84
     43 A1 01 26                                           ; protected header {1: -7}
     A1 18 21 ‖ x5chain                                    ; unprotected header {33: x5chain}
-    59 01 93 D8 18 59 01 8E ‖ MSO                         ; payload
+    59 01 B6 D8 18 59 01 B1 ‖ MSO                         ; payload
     58 40 ‖ signature
+```
 
-; MSO, 398 bytes
+With `psc`:
+
+```
+; IssuerSigned with psc
+A2
+  6A 'nameSpaces' A1
+    78 1C 'eu.europa.ec.eudi.nym_auth.1' 83
+      D8 18 58 5B                                         ; item 0, birth_date: 91 bytes
+        A4 68 'digestID' 00
+           66 'random' 50 ‖ random_0
+           71 'elementIdentifier' 6A 'birth_date'
+           6C 'elementValue' D9 03 EC 6A ‖ birth_date
+      D8 18 58 68                                         ; item 1, ssc: 104 bytes
+        A4 68 'digestID' 01
+           66 'random' 50 ‖ random_1
+           71 'elementIdentifier' 63 'ssc'
+           6C 'elementValue' 58 20 ‖ ssc
+      D8 18 58 68                                         ; item 2, psc: 104 bytes
+        A4 68 'digestID' 02
+           66 'random' 50 ‖ random_2
+           71 'elementIdentifier' 63 'psc'
+           6C 'elementValue' 58 20 ‖ psc
+  6A 'issuerAuth' 84
+    43 A1 01 26                                           ; protected header {1: -7}
+    A1 18 21 ‖ x5chain                                    ; unprotected header {33: x5chain}
+    59 01 B6 D8 18 59 01 B1 ‖ MSO                         ; payload
+    58 40 ‖ signature
+```
+
+The MSO of both:
+
+```
+; MSO, 433 bytes
 A6
   67 'version' 63 '1.0'
   6F 'digestAlgorithm' 67 'SHA-256'
   6C 'valueDigests' A1
-    78 1C 'eu.europa.ec.eudi.nym_auth.1' A2
+    78 1C 'eu.europa.ec.eudi.nym_auth.1' A3
       00 58 20 ‖ digest_0
       01 58 20 ‖ digest_1
+      02 58 20 ‖ digest_2
   6D 'deviceKeyInfo' A1
     69 'deviceKey' A4 01 02 20 01 21 58 20 ‖ x ‖ 22 58 20 ‖ y
   67 'docType' 78 1C 'eu.europa.ec.eudi.nym_auth.1'
@@ -145,18 +181,12 @@ A6
 | `birth_date` | 10 | `birth_date` as `YYYY-MM-DD`. |
 | `ssc`, `psc` | 32 each | `ssc` and `psc`. |
 | `x5chain` | varies | The DER Document Signer certificate as a bstr with the shortest head. Its key is a P-256 key. |
-| `MSO` | 398, or 433 with `psc` | The Mobile Security Object above. |
+| `MSO` | 433 | The Mobile Security Object above. |
 | `signature` | 64 | The ES256 signature of `issuerAuth`, r ‖ s, each half 32 bytes big-endian. |
-| `digest_0`, `digest_1`, `digest_2` | 32 each | SHA-256 of item k, from its `D8 18` on. |
+| `digest_0`, `digest_1` | 32 each | SHA-256 of item 0 and of item 1, from its `D8 18` on. |
+| `digest_2` | 32 | With `psc`, SHA-256 of item 2, from its `D8 18` on. Without `psc`, 32 zero bytes. |
 | `x`, `y` | 32 each | The device key's coordinates, big-endian. |
 | `signed`, `validFrom`, `validUntil` | 20 each | `YYYY-MM-DDThh:mm:ssZ`. |
-
-An attestation with `psc` has a third item, after the `ssc` item:
-
-* the array head `82` becomes `83`. The third item is the `ssc` item with `digestID` `02`,
-  `random_2`, the identifier `63 'psc'` and the value `58 20 ‖ psc`;
-* the `valueDigests` head `A2` becomes `A3`, followed by `02 58 20 ‖ digest_2`;
-* the MSO has 433 bytes, and the payload is `59 01 B6 D8 18 59 01 B1 ‖ MSO`.
 
 # BBS committed-disclosure encoding (`bbs_cd`)
 

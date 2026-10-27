@@ -46,10 +46,8 @@ This system answers `unsupported` for an option ([zkp_req](../zkp_req.md), Secti
 The circuits read credentials of this form. The Wallet rejects any other with `credential_form`.
 
 * Issuer and device signatures are ES256. MSO digests are SHA-256.
-* The whole `Sig_structure` is at most 439 bytes. Padded, it fills at most 7 blocks.
+* The `Sig_structure` has 458 bytes (nym_auth, Layout). Padded, it fills 8 blocks.
 * The `birth_date` and `ssc` IssuerSignedItemBytes are at most 119 bytes each (2 blocks).
-* Readdit's credentials fit, with 423, 95 and 108 bytes. They hold exactly the items
-  `birth_date` and `ssc`, and have the protected header `{1: -7}`.
 * The device key is a COSE_Key with exactly the entries 1, −1, −2 and −3 in this order. Its
   coordinates have 32 bytes. Its encoding is
   `69 'deviceKey' A4 01 02 20 01 21 58 20 ‖ x ‖ 22 58 20 ‖ y`.
@@ -191,6 +189,10 @@ It computes E, C, `verifier_input` and e2 as the Verifier does.
    `ZkProverPair::prove` in `zk.rs` does this.
 
 ## 8. Artifacts
+
+> TODO: Rebuild the hash circuit for the Layout's 8-block `Sig_structure`. The pinned one reads at
+> most 7 blocks. The circuit's id and sizes, its `block_enc` (Section 3), the slots of a_p,k
+> (Section 4), these artifacts and the known answers follow from the new circuit.
 
 The Wallet and Verifier apps carry these artifacts built in. Each app MUST hold them with these
 SHA-256 values and sizes. The reference copies are in readdit at the commit of Section 10, in
