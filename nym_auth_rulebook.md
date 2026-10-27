@@ -257,7 +257,7 @@ Every `nym_auth` proof, whatever its `_req` items, shows:
 1. **Issuer:** a key the Verifier trusts signed the attestation. A system MAY hide which key among a
    set of keys the Verifier trusts.
 2. **Validity:** where the encoding has a validity period, the attestation is valid at the proof
-   time. The proof time is within the Verifier's tolerance of its clock.
+   time, compared in UTC. The proof time is within the Verifier's tolerance of its clock.
 3. **Device binding:** the attestation's device key signed over the session.
 4. **Session:** the proof is bound to the session (Binding).
 5. **Items:** every item of the answered option holds, with the parameters the Verifier sent.
@@ -487,8 +487,10 @@ age   = 1*DIGIT       ; base-10 integer
 A `range` that breaks this syntax, or `A-B` with A > B, makes the query invalid.
 
 The proof shows $`E \le \text{birth\_date} \le C`$. The Wallet Unit and the Verifier compute E and C
-from `range` and D. D is the UTC date of the proof time: the time at which the system tests validity
-(What every proof establishes). The system rulebook says where the proof carries D.
+from `range` and D. D is the Verifier's local date at the proof time: the date of the proof time
+shifted by the query's `utc_offset` (`zkp_req`, Section 1.4). The proof time is the time at which
+the system tests validity (What every proof establishes). The system rulebook says where the proof
+carries D.
 
 * D minus N years keeps the month and day of D and subtracts N from its year. The result may be no
   calendar date, such as (2015, 02, 29). It compares with calendar dates in date order.
@@ -530,6 +532,7 @@ A signed Request Object over the Digital Credentials API, offering both forms as
         "id": "nym_attestation",
         "format": "zkp_req",
         "meta": { "source_format": "mso_mdoc", "doctype_value": "eu.europa.ec.eudi.nym_auth.1" },
+        "utc_offset": "+02:00",
         "_req": [
           { "fn_id": "pseudonym", "return": "nym",
             "params": { "config": "known-offender-matching-ssc", "ver": 1, "prf": "sha-256" } },
@@ -540,6 +543,7 @@ A signed Request Object over the Digital Credentials API, offering both forms as
         "id": "nym_attestation_bbs",
         "format": "zkp_req",
         "meta": { "source_format": "bbs_cd", "schema_id_value": "eu.europa.ec.eudi.nym_auth.bbs.1" },
+        "utc_offset": "+02:00",
         "_req": [
           { "fn_id": "pseudonym", "return": "nym",
             "params": { "config": "known-offender-matching-ssc", "ver": 1, "prf": "hashdh-bls12381g1" } },
@@ -566,4 +570,5 @@ The presentation for `nym_attestation`, before encoding (`zkp_req`, Section 4):
 }
 ```
 
-Its `proof_time` falls on 2026-10-09. `13-17` then gives E = 2008-10-10 and C = 2013-10-09.
+Its `proof_time` is `2026-10-08T22:30:00Z`. At the `utc_offset` `+02:00`, D is 2026-10-09, so
+`13-17` gives E = 2008-10-10 and C = 2013-10-09.

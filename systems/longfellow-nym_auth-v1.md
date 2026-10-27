@@ -98,8 +98,8 @@ The hash circuit has 586 public slots, in slot order:
 | :-- | :-- | :-- |
 | 0 | 1 | constant |
 | 1–160 | bits of T: the 20 ASCII bytes of `proof_time` | `inputs.proof_time` |
-| 161–240 | bits of E as 10 ASCII bytes `YYYY-MM-DD`; `0000-00-00` without E | `range` at the date of `inputs.proof_time` (nym_auth, `age_check`) |
-| 241–320 | bits of C as 10 ASCII bytes; `9999-12-31` without C | `range` at the date of `inputs.proof_time` (nym_auth, `age_check`) |
+| 161–240 | bits of E as 10 ASCII bytes `YYYY-MM-DD`; `0000-00-00` without E | `range` at D, the date of `inputs.proof_time` at `utc_offset` (nym_auth, `age_check`) |
+| 241–320 | bits of C as 10 ASCII bytes; `9999-12-31` without C | `range` at D, the date of `inputs.proof_time` at `utc_offset` (nym_auth, `age_check`) |
 | 321–576 | bits of `verifier_input` (32 bytes) | `verifier_input` (nym_auth, `known-offender-matching-ssc`) |
 | 577–582 | tag_1 … tag_6 | `zk_proof` |
 | 583 | a_v | the transcript |

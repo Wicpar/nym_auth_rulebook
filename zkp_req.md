@@ -44,6 +44,7 @@ with these rules:
 | `meta` | REQUIRED. `source_format`, plus the `meta` members DCQL defines for that format. |
 | `_req` | REQUIRED. Section 2. |
 | `_req_sets` | OPTIONAL. Section 2.1. |
+| `utc_offset` | OPTIONAL. Section 1.4. |
 | `claims`, `claim_sets` | MUST be absent. |
 | `trusted_authorities` | OPTIONAL. As OpenID4VP 1.0, Section 6.1.1, applied to the credential's issuer. |
 | `require_cryptographic_holder_binding` | OPTIONAL. As OpenID4VP 1.0, Section 6.1. The function catalogue says whether `false` is allowed. |
@@ -91,6 +92,16 @@ A system and a proof backend form a usable pair for an option (Section 2.1) when
 For each matching credential, the Wallet picks an option and a usable pair for it. The pair's system
 must prove over the credential's type. If no credential has such an option and pair, the Credential
 Query has no match.
+
+## 1.4 The Verifier's UTC offset
+
+`utc_offset` is the Verifier's offset from UTC, an RFC 3339 `time-numoffset` such as `+02:00` or
+`-05:00`. Its default is `+00:00`. A `utc_offset` that breaks this syntax, or `-00:00`, makes the
+query invalid.
+
+Prover-supplied times are in UTC. A function that depends on the Verifier's local date or time
+reads it as a UTC time shifted by `utc_offset`. Each system converts the two into the
+representation its circuits handle best, and its rulebook says how.
 
 # 2. Requests: `_req`
 
@@ -183,9 +194,9 @@ The Verifier:
 3. rejects a `req_set` that is missing, extra or names no option;
 4. rejects `results` whose keys differ from the answered option's `return` handles;
 5. rejects a value other than `true` for a function without a result;
-6. builds the statement from the answered option, the session, its clock and its trust
-   configuration. From the presentation it takes only `req_set`, `results` and the prover-supplied
-   values the system rulebook names;
+6. builds the statement from the answered option, `utc_offset`, the session, its clock and its
+   trust configuration. From the presentation it takes only `req_set`, `results` and the
+   prover-supplied values the system rulebook names;
 7. verifies `proof` against that statement;
 8. accepts the issuer only if its trust configuration covers every issuer key or certificate the
    proof was made against.

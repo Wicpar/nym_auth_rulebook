@@ -80,8 +80,8 @@ The core circuit has 18 public values, in this order. Each is an element of the 
 | # | Value | Encoding | Source |
 | --: | :-- | :-- | :-- |
 | 0, 1 | issuer key Q: x, y | BE(32 bytes) each | `inputs.issuer_key_set[0]` (Section 6) |
-| 2 | E, earliest birth date | integer YYYYMMDD; 0 without E | `range` at the date of `inputs.proof_time` (nym_auth, `age_check`) |
-| 3 | C, latest birth date | integer YYYYMMDD; 99991231 without C | `range` at the date of `inputs.proof_time` (nym_auth, `age_check`) |
+| 2 | E, earliest birth date | integer YYYYMMDD; 0 without E | `range` at D, the date of `inputs.proof_time` at `utc_offset` (nym_auth, `age_check`) |
+| 3 | C, latest birth date | integer YYYYMMDD; 99991231 without C | `range` at D, the date of `inputs.proof_time` at `utc_offset` (nym_auth, `age_check`) |
 | 4 | T | integer YYYYMMDDhhmmss of `proof_time` | `inputs.proof_time` |
 | 5, 6 | e2, bytes 0..15 and 16..31 | BE(16 bytes) each | session (Section 5) |
 | 7 | docType window, bytes 0..30 | `0x67646f6354797065781c65752e6575726f70612e65` | system |

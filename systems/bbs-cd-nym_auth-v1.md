@@ -135,8 +135,8 @@ m = Tr("ECDSA-POP/0.1/device-message"; "statement" = pstmt, "nv" = nonce, "nh" =
 ## 6. Validity and issuer trust
 
 * The proof establishes no validity, since `bbs_cd` has no validity period.
-* The proof time is the time at which the Wallet makes the proof. `inputs.proof_date` is its UTC
-  date, D (nym_auth, `age_check`).
+* The proof time is the time at which the Wallet makes the proof. `inputs.proof_date` is its
+  date at the query's `utc_offset`, D (nym_auth, `age_check`).
 * `inputs.issuer_key_set` holds one 96-byte ETSI BBS issuer public key.
 * The BBS proof verifies under this key, so the Verifier sees the issuer.
 * The Verifier MUST accept only a key that its trust configuration lists with the schema of
@@ -194,7 +194,7 @@ These files are in `native/bbs/vendor/bbs-cd-plugins/docs/` of
 | Verifier | rejection | `request` | The Verifier's own query lies outside Section 2. |
 | Verifier | rejection | `proof_encoding` | `proof` breaks the format of `bbs-cd-plugins-v0.1`, `inputs` breaks Section 3, or the envelope's credential, disclosure or plugin counts differ from Section 3. |
 | Verifier | rejection | `issuer_key_set` | It holds zero or several keys, or the key is untrusted. |
-| Verifier | rejection | `proof_date` | It is malformed, or no instant of that UTC day lies within the tolerance. |
+| Verifier | rejection | `proof_date` | It is malformed, or no instant of that day at `utc_offset` lies within the tolerance. |
 | Verifier | rejection | `results` | The pseudonym value is no 48-byte `bstr` or differs from the plugin's output, or an `age_check` value is not `true`. |
 | Verifier | rejection | `proof_invalid` | The BBS proof or a plugin proof fails. |
 
