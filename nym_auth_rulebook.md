@@ -95,21 +95,68 @@ psc_type = bstr .size 32
 Each data element is its own `IssuerSignedItem`. `birth_date` is a tag-1004 text string (RFC 8943)
 holding an RFC 3339 `full-date`.
 
-## Compact profile
+## Layout
 
-An attestation is in the compact profile when, in addition to ISO/IEC 18013-5:
+An attestation MUST be the bytes below, with each value filled in for the credential. Every other
+byte is the same in every attestation. Hex bytes are in capitals, `'text'` is the ASCII bytes of
+text, a name is a value of the table below, `‖` joins bytes, and `;` starts a comment.
 
-* it holds only the data elements of this document;
-* each `random` is 16 bytes;
-* `digestID` values count up from 0;
-* the MSO has no optional members;
-* `validityInfo` values have the form `YYYY-MM-DDTHH:MM:SSZ`;
-* the device key and the Document Signer key are P-256 keys.
+```
+; IssuerSigned
+A2
+  6A 'nameSpaces' A1
+    78 1C 'eu.europa.ec.eudi.nym_auth.1' 82
+      D8 18 58 5B                                         ; the birth_date item, 91 bytes
+        A4 68 'digestID' 00
+           66 'random' 50 ‖ random_0
+           71 'elementIdentifier' 6A 'birth_date'
+           6C 'elementValue' D9 03 EC 6A ‖ birth_date
+      D8 18 58 68                                         ; the ssc item, 104 bytes
+        A4 68 'digestID' 01
+           66 'random' 50 ‖ random_1
+           71 'elementIdentifier' 63 'ssc'
+           6C 'elementValue' 58 20 ‖ ssc
+  6A 'issuerAuth' 84
+    43 A1 01 26                                           ; protected header {1: -7}
+    A1 18 21 ‖ x5chain                                    ; unprotected header {33: x5chain}
+    59 01 93 D8 18 59 01 8E ‖ MSO                         ; payload
+    58 40 ‖ signature
 
-Issuers SHOULD issue in the compact profile.
+; MSO, 398 bytes
+A6
+  67 'version' 63 '1.0'
+  6F 'digestAlgorithm' 67 'SHA-256'
+  6C 'valueDigests' A1
+    78 1C 'eu.europa.ec.eudi.nym_auth.1' A2
+      00 58 20 ‖ digest_0
+      01 58 20 ‖ digest_1
+  6D 'deviceKeyInfo' A1
+    69 'deviceKey' A4 01 02 20 01 21 58 20 ‖ x ‖ 22 58 20 ‖ y
+  67 'docType' 78 1C 'eu.europa.ec.eudi.nym_auth.1'
+  6C 'validityInfo' A3
+    66 'signed' C0 74 ‖ signed
+    69 'validFrom' C0 74 ‖ validFrom
+    6A 'validUntil' C0 74 ‖ validUntil
+```
 
-> TODO: Make the compact profile the only form, or remove it. As an option, its circuits either
-> obsolete the more complex circuits for any encoding or duplicate them.
+| Value | Bytes | Content |
+| :-- | --: | :-- |
+| `random_0`, `random_1`, `random_2` | 16 each | The items' `random` values. |
+| `birth_date` | 10 | `birth_date` as `YYYY-MM-DD`. |
+| `ssc`, `psc` | 32 each | `ssc` and `psc`. |
+| `x5chain` | varies | The DER Document Signer certificate as a bstr with the shortest head. Its key is a P-256 key. |
+| `MSO` | 398, or 433 with `psc` | The Mobile Security Object above. |
+| `signature` | 64 | The ES256 signature of `issuerAuth`, r ‖ s, each half 32 bytes big-endian. |
+| `digest_0`, `digest_1`, `digest_2` | 32 each | SHA-256 of item k, from its `D8 18` on. |
+| `x`, `y` | 32 each | The device key's coordinates, big-endian. |
+| `signed`, `validFrom`, `validUntil` | 20 each | `YYYY-MM-DDThh:mm:ssZ`. |
+
+An attestation with `psc` has a third item, after the `ssc` item:
+
+* the array head `82` becomes `83`. The third item is the `ssc` item with `digestID` `02`,
+  `random_2`, the identifier `63 'psc'` and the value `58 20 ‖ psc`;
+* the `valueDigests` head `A2` becomes `A3`, followed by `02 58 20 ‖ digest_2`;
+* the MSO has 433 bytes, and the payload is `59 01 B6 D8 18 59 01 B1 ‖ MSO`.
 
 # BBS committed-disclosure encoding (`bbs_cd`)
 
@@ -265,8 +312,7 @@ Response Mode, or a missing key, makes the request invalid.
 ## Systems
 
 A `nym_auth` system has a system rulebook (`zkp_req`, Section 4.3). It proves everything in "What
-every proof establishes". It MAY read only some ISO/IEC 18013-5 forms, such as the compact profile.
-Its rulebook lists the forms it reads.
+every proof establishes". A system for `mso_mdoc` reads attestations of the Layout.
 
 | System | Proof backends | Source format |
 | :--- | :--- | :--- |

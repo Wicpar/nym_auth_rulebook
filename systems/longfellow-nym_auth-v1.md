@@ -48,8 +48,8 @@ The circuits read credentials of this form. The Wallet rejects any other with `c
 * Issuer and device signatures are ES256. MSO digests are SHA-256.
 * The whole `Sig_structure` is at most 439 bytes. Padded, it fills at most 7 blocks.
 * The `birth_date` and `ssc` IssuerSignedItemBytes are at most 119 bytes each (2 blocks).
-* Readdit's credentials fit, with 423, 95 and 108 bytes. They are in the compact profile, hold
-  exactly the items `birth_date` and `ssc`, and have the protected header `{1: -7}`.
+* Readdit's credentials fit, with 423, 95 and 108 bytes. They hold exactly the items
+  `birth_date` and `ssc`, and have the protected header `{1: -7}`.
 * The device key is a COSE_Key with exactly the entries 1, −1, −2 and −3 in this order. Its
   coordinates have 32 bytes. Its encoding is
   `69 'deviceKey' A4 01 02 20 01 21 58 20 ‖ x ‖ 22 58 20 ‖ y`.
